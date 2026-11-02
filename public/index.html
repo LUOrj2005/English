@@ -153,6 +153,26 @@
       </div>
     </section>
 
+    <section id="view-word" class="view">
+      <div class="container">
+        <div class="panel">
+          <div class="panel-head row-head">
+            <div>
+              <h2>生词详情</h2>
+              <p class="muted" id="wordDetailMeta">从生词本打开，不跳转词典</p>
+            </div>
+            <button type="button" id="wordBackBtn" class="btn ghost sm">← 返回生词本</button>
+          </div>
+          <div id="wordDetail"></div>
+          <div class="form-actions" style="margin-top:12px">
+            <button type="button" id="wordAiBtn" class="btn ghost sm">用 AI 查衍生词</button>
+            <span id="wordAiStatus" class="muted small"></span>
+          </div>
+          <div id="wordOthers"></div>
+        </div>
+      </div>
+    </section>
+
     <section id="view-settings" class="view">
       <div class="container">
         <div class="panel">
@@ -199,6 +219,14 @@
             文本格式：每行 <code>单词,音标,释义</code>（Tab 或逗号分隔；多个释义用 <code>;</code> 分隔，词性可写成 <code>n. 释义</code>）。<br>
             JSON 格式：<code>[{"word":"abandon","phonetic":"/əˈbændən/","senses":[{"pos":"v.","meaning":"放弃"}]}]</code>
           </p>
+          <div class="dict-browse">
+            <div class="vocab-toolbar">
+              <input type="search" id="dictSearchInput" placeholder="搜索词典中的单词…">
+              <span id="dictBrowseStatus" class="muted small">尚未载入</span>
+            </div>
+            <div id="dictList" class="dict-list"></div>
+            <button type="button" id="dictMoreBtn" class="btn ghost sm hidden">加载更多</button>
+          </div>
         </div>
       </div>
     </section>

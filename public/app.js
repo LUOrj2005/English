@@ -50,6 +50,7 @@ const el = {
   dictationCard: $('#dictationCard'),
   popover: $('#wordPopover'),
   popBody: $('#popBody'),
+  wordDetail: $('#wordDetail'),
   toast: $('#toast'),
   aiState: $('#aiState')
 };
@@ -61,7 +62,8 @@ const state = {
   busy: false,
   popAnchor: null,
   docName: '',
-  docQuery: ''
+  docQuery: '',
+  detailWord: ''
 };
 
 const review = {
@@ -197,30 +199,30 @@ async function lookupWord(rawWord, opts = {}) {
   const seq = (seqByTarget.get(target) || 0) + 1;
   seqByTarget.set(target, seq);
 
-  const finish = () => {
+  const finish = (ok = true) => {
     if (opts.anchor) positionPopover(opts.anchor);
-    if (typeof opts.onDone === 'function') opts.onDone();
+    if (typeof opts.onDone === 'function') opts.onDone(ok);
   };
 
   target.innerHTML = loadingCard(word);
-  finish();
+  if (opts.anchor) positionPopover(opts.anchor);
 
   try {
     const result = await request('/api/dict', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ word, context: opts.context || '' })
+      body: JSON.stringify({ word, context: opts.context || '', forceAI: Boolean(opts.forceAI) })
     });
     if (seqByTarget.get(target) !== seq) return;
     const card = result && result.card;
     if (!card || typeof card !== 'object') throw new Error('返回格式异常');
     if (!card.word) card.word = word;
     renderWordCard(target, card, { ...opts, word });
-    finish();
+    finish(true);
   } catch (err) {
     if (seqByTarget.get(target) !== seq) return;
     target.innerHTML = errorCard(err.message);
-    finish();
+    finish(false);
   }
 }
 
@@ -231,14 +233,35 @@ function runDictSearch() {
 }
 
 /* ---------- 朗读 ---------- */
+let ttsVoice = null;
+
+function pickEnglishVoice() {
+  const voices = speechSynthesis.getVoices();
+  if (!voices.length) return null;
+  const isEn = (v) => String(v.lang || '').toLowerCase().startsWith('en');
+  return voices.find((v) => v.lang === 'en-US' && v.localService)
+    || voices.find((v) => v.lang === 'en-US')
+    || voices.find((v) => isEn(v) && v.localService)
+    || voices.find(isEn)
+    || null;
+}
+
+if (window.speechSynthesis) {
+  ttsVoice = pickEnglishVoice();
+  speechSynthesis.addEventListener('voiceschanged', () => {
+    ttsVoice = pickEnglishVoice() || ttsVoice;
+  });
+}
+
 function speakWord(word) {
   if (!word || !window.speechSynthesis) return;
+  const text = String(word).trim();
+  if (!text) return;
   speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance(word);
+  const utter = new SpeechSynthesisUtterance(text);
   utter.lang = 'en-US';
   utter.rate = 0.9;
-  const voices = speechSynthesis.getVoices();
-  const voice = voices.find((v) => v.lang === 'en-US') || voices.find((v) => v.lang.startsWith('en'));
+  const voice = ttsVoice || pickEnglishVoice();
   if (voice) utter.voice = voice;
   speechSynthesis.speak(utter);
 }
@@ -1081,6 +1104,39 @@ function switchView(name) {
   if (name === 'settings') loadStatus();
 }
 
+function openWordDetail(word) {
+  state.detailWord = word;
+  const meta = $('#wordDetailMeta');
+  if (meta) meta.textContent = `生词本 · ${word}`;
+  const aiStatus = $('#wordAiStatus');
+  if (aiStatus) aiStatus.textContent = '';
+  switchView('word');
+  renderOtherVocab(word);
+  lookupWord(word, { target: el.wordDetail });
+}
+
+function renderOtherVocab(currentWord) {
+  const box = $('#wordOthers');
+  if (!box) return;
+  const current = String(currentWord || '').toLowerCase();
+  const others = state.vocab.filter((item) => item.word.toLowerCase() !== current);
+  if (!others.length) {
+    box.innerHTML = '<div class="empty-line">生词本里还没有其他单词</div>';
+    return;
+  }
+  const shown = others.slice(0, 40);
+  box.innerHTML = `
+    <div class="sec">
+      <h3>其他生词（${others.length}）</h3>
+      <div class="chips">${shown.map((item) => `
+        <button type="button" class="chip" data-word="${esc(item.word)}">
+          <span class="chip-word">${esc(item.word)}</span>
+          ${item.phonetic ? `<span class="chip-meta">${esc(item.phonetic)}</span>` : ''}
+        </button>`).join('')}</div>
+      ${others.length > shown.length ? '<p class="muted small">仅显示前 40 个，可回生词本搜索</p>' : ''}
+    </div>`;
+}
+
 /* ---------- 设置 ---------- */
 async function loadStatus() {
   try {
@@ -1097,6 +1153,7 @@ async function loadStatus() {
     if (dictStatus) {
       dictStatus.textContent = status.dictCount ? `已导入 ${status.dictCount} 条` : '尚未导入';
     }
+    loadDictPage(true);
   } catch (err) {
     el.aiState.innerHTML = '<i class="bad"></i><span>服务未连接</span>';
   }
@@ -1207,6 +1264,12 @@ document.addEventListener('click', (event) => {
         popover: true,
         anchor: state.popAnchor
       });
+    } else if ($('#view-word').classList.contains('active')) {
+      state.detailWord = word;
+      $('#wordDetailMeta').textContent = `生词本 · ${word}`;
+      $('#wordAiStatus').textContent = '';
+      renderOtherVocab(word);
+      lookupWord(word, { target: el.wordDetail });
     } else {
       el.dictInput.value = word;
       lookupWord(word);
@@ -1357,10 +1420,12 @@ dictFileInput.addEventListener('change', async () => {
       headers: { 'Content-Type': 'text/plain; charset=utf-8' },
       body: text
     });
-    dictStatus.textContent = `已导入 ${result.imported} 条${result.skipped ? `，跳过 ${result.skipped} 行` : ''} · 词典共 ${result.count} 条`;
+    dictStatus.textContent = `已导入 ${result.imported} 条${result.skipped ? `，跳过 ${result.skipped} 行` : ''} · 已加入生词本 ${result.vocabAdded || 0} 条 · 词典共 ${result.count} 条`;
     toast(`已导入 ${result.imported} 条词条`);
+    loadDictPage(true);
+    refreshVocab();
   } catch (err) {
-    dictStatus.textContent = '导入失败';
+    dictStatus.textContent = `导入失败：${err.message}`;
     toast(err.message, 'error');
   }
 });
@@ -1371,10 +1436,78 @@ $('#clearDictBtn').addEventListener('click', async () => {
     const result = await request('/api/dictionary', { method: 'DELETE' });
     $('#dictStatus').textContent = '已清空自定义词典';
     toast(`已删除 ${result.deleted || 0} 条词条`);
+    loadDictPage(true);
   } catch (err) {
     toast(err.message, 'error');
   }
 });
+
+/* 词典内容浏览 */
+const dictBrowse = { q: '', offset: 0, limit: 50, total: 0, items: [], loading: false };
+
+function renderDictList() {
+  const list = $('#dictList');
+  const status = $('#dictBrowseStatus');
+  const moreBtn = $('#dictMoreBtn');
+  if (!dictBrowse.total) {
+    list.innerHTML = '<div class="empty-line">词典还是空的，先上传词典文件</div>';
+    status.textContent = '共 0 条';
+    moreBtn.classList.add('hidden');
+    return;
+  }
+  if (!dictBrowse.items.length) {
+    list.innerHTML = '<div class="empty-line">没有匹配的词条</div>';
+    status.textContent = `匹配 0 条 / 共 ${dictBrowse.total} 条`;
+    moreBtn.classList.add('hidden');
+    return;
+  }
+  list.innerHTML = dictBrowse.items.map((item) => {
+    const senses = Array.isArray(item.senses) ? item.senses : [];
+    const brief = senses.map((s) => `${s.pos ? `<span class="pos">${esc(s.pos)}</span>` : ''}${esc(s.meaning || '')}`).join('；');
+    return `<div class="dict-row">
+      <div class="dict-word">${esc(item.word)}${item.phonetic ? `<span class="phonetic">${esc(item.phonetic)}</span>` : ''}</div>
+      <div class="dict-senses">${brief || '（暂无释义）'}</div>
+    </div>`;
+  }).join('');
+  status.textContent = `${dictBrowse.q ? `匹配 ${dictBrowse.total} 条` : `共 ${dictBrowse.total} 条`} · 已显示 ${dictBrowse.items.length} 条`;
+  moreBtn.classList.toggle('hidden', dictBrowse.items.length >= dictBrowse.total);
+}
+
+async function loadDictPage(reset = true) {
+  if (dictBrowse.loading) return;
+  dictBrowse.loading = true;
+  if (reset) {
+    dictBrowse.offset = 0;
+    dictBrowse.items = [];
+  }
+  try {
+    const params = new URLSearchParams({
+      q: dictBrowse.q,
+      limit: String(dictBrowse.limit),
+      offset: String(dictBrowse.offset)
+    });
+    const data = await request(`/api/dictionary?${params.toString()}`);
+    dictBrowse.total = Number(data.matched || 0);
+    dictBrowse.items = dictBrowse.items.concat(data.items || []);
+    dictBrowse.offset = dictBrowse.items.length;
+    renderDictList();
+  } catch (err) {
+    $('#dictBrowseStatus').textContent = `读取词典失败：${err.message}`;
+  } finally {
+    dictBrowse.loading = false;
+  }
+}
+
+let dictSearchTimer = 0;
+$('#dictSearchInput').addEventListener('input', (event) => {
+  clearTimeout(dictSearchTimer);
+  const value = event.target.value;
+  dictSearchTimer = setTimeout(() => {
+    dictBrowse.q = value.trim();
+    loadDictPage(true);
+  }, 300);
+});
+$('#dictMoreBtn').addEventListener('click', () => loadDictPage(false));
 
 /* 生词本交互 */
 el.vocabList.addEventListener('click', async (event) => {
@@ -1383,9 +1516,7 @@ el.vocabList.addEventListener('click', async (event) => {
   const word = row.dataset.word;
 
   if (event.target.closest('[data-action="lookup"]')) {
-    switchView('dict');
-    el.dictInput.value = word;
-    lookupWord(word);
+    openWordDetail(word);
     return;
   }
 
@@ -1434,6 +1565,17 @@ el.vocabFilters.addEventListener('click', (event) => {
 });
 
 $('#exportBtn').addEventListener('click', exportCSV);
+$('#wordBackBtn').addEventListener('click', () => switchView('vocab'));
+$('#wordAiBtn').addEventListener('click', () => {
+  const word = state.detailWord;
+  if (!word) return;
+  $('#wordAiStatus').textContent = '正在用 AI 分析词根与衍生词…';
+  lookupWord(word, {
+    target: el.wordDetail,
+    forceAI: true,
+    onDone: (ok) => { $('#wordAiStatus').textContent = ok ? 'AI 结果已更新' : 'AI 查询失败，请检查 Key 或网络'; }
+  });
+});
 $('#exportAnkiBtn').addEventListener('click', exportAnki);
 
 /* 设置表单 */

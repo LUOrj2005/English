@@ -3,11 +3,16 @@ node_modules/
 npm-debug.log*
 yarn-error.log*
 
-# 运行时数据（含个人生词本、词典缓存）
+# 运行时数据（含个人生词本、词典缓存、导入日志）
 data/
 *.db
 *.db-shm
 *.db-wal
+*.db-journal
+
+# 日志
+logs/
+*.log
 
 # 本地配置（从网页设置保存 API Key 后会写入此文件）
 config.json
