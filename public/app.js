@@ -496,11 +496,17 @@ function renderRow(seg, direction = 'en2zh') {
   if (direction === 'zh2en') {
     return `<div class="row">
       <div class="col zh">${esc(seg.src)}</div>
-      <div class="col en">${renderEnglish(seg.out || '…')}</div>
+      <div class="col en"><div class="en-wrap">
+        <div class="en-text">${renderEnglish(seg.out || '…')}</div>
+        <button class="icon-btn sent-speak" data-action="speak" data-word="${esc(seg.out || '')}" title="朗读整句">🔊</button>
+      </div></div>
     </div>`;
   }
   return `<div class="row">
-    <div class="col en">${renderEnglish(seg.src)}</div>
+    <div class="col en"><div class="en-wrap">
+      <div class="en-text">${renderEnglish(seg.src)}</div>
+      <button class="icon-btn sent-speak" data-action="speak" data-word="${esc(seg.src)}" title="朗读整句">🔊</button>
+    </div></div>
     <div class="col zh">${esc(seg.out || '…')}</div>
   </div>`;
 }
@@ -1006,11 +1012,11 @@ function renderDictation() {
         <div class="flash-sub">${item.phonetic ? `<span>${esc(item.phonetic)}</span>` : ''}</div>
         <div class="flash-answer">${esc(sensesBrief(item) || '（暂无释义）')}</div>
         <button class="btn primary quiz-next" data-action="dict-next">下一个</button>`
-      : `<div class="spell-row"><input id="dictInput" type="text" autocomplete="off" spellcheck="false" placeholder="听到什么就写什么"><button class="btn primary" data-action="dict-submit">提交</button></div>`}
+      : `<div class="spell-row"><input id="dictationInput" type="text" autocomplete="off" spellcheck="false" placeholder="听到什么就写什么"><button class="btn primary" data-action="dict-submit">提交</button></div>`}
   `;
 
   if (!review.dchecked) {
-    const input = $('#dictInput');
+    const input = $('#dictationInput');
     if (input) input.focus();
     setTimeout(() => speakWord(item.word), 400);
   }
@@ -1020,7 +1026,7 @@ function submitDictation() {
   if (review.dchecked) return;
   const current = review.dictation[review.di];
   if (!current) return;
-  const input = $('#dictInput');
+  const input = $('#dictationInput');
   const value = input ? input.value.trim() : '';
   if (!value) return;
   const ok = value.toLowerCase() === current.item.word.toLowerCase();
@@ -1111,8 +1117,21 @@ function openWordDetail(word) {
   const aiStatus = $('#wordAiStatus');
   if (aiStatus) aiStatus.textContent = '';
   switchView('word');
+  const navDisabled = state.vocab.length < 2;
+  const prevBtn = $('#wordPrevBtn');
+  const nextBtn = $('#wordNextBtn');
+  if (prevBtn) prevBtn.disabled = navDisabled;
+  if (nextBtn) nextBtn.disabled = navDisabled;
   renderOtherVocab(word);
   lookupWord(word, { target: el.wordDetail });
+}
+
+function navWordDetail(offset) {
+  if (state.vocab.length < 2 || !state.detailWord) return;
+  const idx = state.vocab.findIndex((it) => it.word.toLowerCase() === state.detailWord.toLowerCase());
+  if (idx < 0) return;
+  const next = state.vocab[(idx + offset + state.vocab.length) % state.vocab.length];
+  openWordDetail(next.word);
 }
 
 function renderOtherVocab(currentWord) {
@@ -1566,6 +1585,13 @@ el.vocabFilters.addEventListener('click', (event) => {
 
 $('#exportBtn').addEventListener('click', exportCSV);
 $('#wordBackBtn').addEventListener('click', () => switchView('vocab'));
+$('#wordPrevBtn').addEventListener('click', () => navWordDetail(-1));
+$('#wordNextBtn').addEventListener('click', () => navWordDetail(1));
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter' && event.target && event.target.id === 'dictationInput') {
+    submitDictation();
+  }
+});
 $('#wordAiBtn').addEventListener('click', () => {
   const word = state.detailWord;
   if (!word) return;

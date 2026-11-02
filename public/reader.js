@@ -54,14 +54,33 @@ function toast(message, kind = 'info') {
 }
 
 /* ---------- 朗读 ---------- */
+let ttsVoice = null;
+
+function pickEnglishVoice() {
+  const voices = speechSynthesis.getVoices();
+  if (!voices.length) return null;
+  const isEn = (v) => String(v.lang || '').toLowerCase().startsWith('en');
+  return voices.find((v) => v.lang === 'en-US' && v.localService)
+    || voices.find((v) => v.lang === 'en-US')
+    || voices.find((v) => isEn(v) && v.localService)
+    || voices.find(isEn)
+    || null;
+}
+
+if (window.speechSynthesis) {
+  ttsVoice = pickEnglishVoice();
+  speechSynthesis.addEventListener('voiceschanged', () => {
+    ttsVoice = pickEnglishVoice() || ttsVoice;
+  });
+}
+
 function speakWord(word) {
   if (!word || !window.speechSynthesis) return;
   speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(word);
   utter.lang = 'en-US';
   utter.rate = 0.9;
-  const voices = speechSynthesis.getVoices();
-  const voice = voices.find((v) => v.lang === 'en-US') || voices.find((v) => v.lang.startsWith('en'));
+  const voice = ttsVoice || pickEnglishVoice();
   if (voice) utter.voice = voice;
   speechSynthesis.speak(utter);
 }
@@ -89,7 +108,10 @@ function renderRow(seg, direction) {
   const en = direction === 'zh2en' ? seg.out : seg.src;
   return `<div class="zr-row">
     <div class="zr-zh">${esc(zh || '…')}</div>
-    <div class="zr-en">${renderEnglish(en || '…')}</div>
+    <div class="zr-en-wrap">
+      <div class="zr-en">${renderEnglish(en || '…')}</div>
+      <button class="icon-btn sent-speak" data-action="speak" data-word="${esc(en || '')}" title="朗读整句">🔊</button>
+    </div>
   </div>`;
 }
 

@@ -161,7 +161,11 @@
               <h2>生词详情</h2>
               <p class="muted" id="wordDetailMeta">从生词本打开，不跳转词典</p>
             </div>
-            <button type="button" id="wordBackBtn" class="btn ghost sm">← 返回生词本</button>
+            <div class="detail-nav">
+              <button type="button" id="wordPrevBtn" class="btn ghost sm" title="上一个生词">← 上一个</button>
+              <button type="button" id="wordNextBtn" class="btn ghost sm" title="下一个生词">下一个 →</button>
+              <button type="button" id="wordBackBtn" class="btn ghost sm">返回生词本</button>
+            </div>
           </div>
           <div id="wordDetail"></div>
           <div class="form-actions" style="margin-top:12px">

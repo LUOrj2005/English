@@ -444,6 +444,15 @@ kbd {
 .dict-senses { margin-top: 2px; color: var(--muted); font-size: 13px; line-height: 1.6; word-break: break-word; }
 .dict-senses .pos { color: #64748b; margin-right: 4px; }
 
+/* ---------- 生词详情导航 ---------- */
+.detail-nav { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---------- 句子朗读 ---------- */
+.en-wrap, .zr-en-wrap { display: flex; gap: 8px; align-items: flex-start; }
+.en-wrap .en-text, .zr-en-wrap .zr-en { flex: 1; min-width: 0; }
+.sent-speak { flex: none; margin-top: 2px; opacity: .55; font-size: 14px; }
+.sent-speak:hover { opacity: 1; }
+
 .status-select {
   padding: 5px 8px;
   border: 1px solid var(--line);
