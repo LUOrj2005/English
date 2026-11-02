@@ -1,0 +1,28 @@
+# 依赖
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# 运行时数据（含个人生词本、词典缓存）
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# 本地配置（从网页设置保存 API Key 后会写入此文件）
+config.json
+*.tmp
+
+# 环境变量 / 密钥
+.env
+.env.*
+*.pem
+*.key
+
+# 编辑器与系统文件
+.vscode/
+.idea/
+.trae/
+.DS_Store
+Thumbs.db
+desktop.ini

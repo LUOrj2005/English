@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1d4ed8">
+  <title>对照阅读 · 词镜 WordLens</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">W</span>
+      <div><strong>词镜</strong><span class="sub">对照阅读</span></div>
+    </div>
+    <div class="reader-top">
+      <button id="backBtn" class="btn ghost sm">← 返回文档对照</button>
+      <span class="muted small" id="readerMeta"></span>
+    </div>
+  </header>
+
+  <main>
+    <div class="container reader-wrap">
+      <div class="panel reader-panel">
+        <div class="reader-head">
+          <h1 id="readerTitle">加载中…</h1>
+          <p class="muted small" id="readerSub"></p>
+        </div>
+        <div id="readerBody" class="reader-body">
+          <div class="empty-line">正在读取记录…</div>
+        </div>
+      </div>
+      <p class="muted small reader-tip">点击英文单词查看解释；已收录的生词会高亮显示。</p>
+    </div>
+  </main>
+
+  <div id="wordPopover" class="popover hidden"><div id="popBody"></div></div>
+  <div id="toast" class="toast hidden"></div>
+  <script src="reader.js"></script>
+</body>
+</html>

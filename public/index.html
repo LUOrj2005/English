@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="本地运行的 AI 英语学习工作台：词典、派生词、文档中英对照、生词复习与听写。">
+  <meta name="theme-color" content="#1d4ed8">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <title>词镜 WordLens · 英语学习工作台</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">W</span>
+      <div><strong>词镜</strong><span class="sub">WordLens</span></div>
+    </div>
+    <nav class="tabs">
+      <button class="tab active" data-view="dict">词典</button>
+      <button class="tab" data-view="doc">文档对照</button>
+      <button class="tab" data-view="review">复习<span class="count" id="dueCount">0</span></button>
+      <button class="tab" data-view="vocab">生词本<span class="count" id="vocabCount">0</span></button>
+      <button class="tab" data-view="settings">设置</button>
+    </nav>
+    <div class="ai-state" id="aiState"><i></i><span>检测中</span></div>
+  </header>
+
+  <main>
+    <section id="view-dict" class="view active">
+      <div class="container">
+        <div class="search-card">
+          <label class="search-label" for="dictInput">查一个词，看它的整个词族</label>
+          <div class="search-row">
+            <input id="dictInput" type="text" autocomplete="off" spellcheck="false" placeholder="输入单词或短语，例如 abandon、take off">
+            <button id="dictBtn" class="btn primary">查询</button>
+          </div>
+          <p class="hint"><kbd>/</kbd> 聚焦输入框 · <kbd>Enter</kbd> 查询 · 结果含音标、词根、派生词、近反义词、例句</p>
+        </div>
+        <div id="dictResult" class="result-area">
+          <div class="empty-state">
+            <p class="empty-title">输入一个词开始</p>
+            <p>点开派生词卡片，可以顺着词根一路查下去。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-doc" class="view">
+      <div class="container wide">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>文档中英对照</h2>
+            <p class="muted">上传或粘贴英文 / 中文材料，AI 逐句生成对照并自动保存；完成后跳转到阅读页（中文在上、英文在下），点击英文单词即可查看解释。</p>
+          </div>
+          <div class="doc-grid">
+            <div class="dropzone" id="dropzone" tabindex="0">
+              <input type="file" id="fileInput" accept=".txt,.md,.markdown,.docx" hidden>
+              <div class="dz-icon">⇪</div>
+              <p><strong>拖拽文件到这里</strong>，或点击选择</p>
+              <p class="muted small">支持 .txt / .md / .docx</p>
+            </div>
+            <div class="paste-box">
+              <label for="pasteInput">或粘贴文本</label>
+              <textarea id="pasteInput" spellcheck="false" placeholder="Paste an English article here, 或粘贴中文段落…"></textarea>
+            </div>
+          </div>
+          <div class="doc-controls">
+            <div class="segmented" id="dirGroup" role="group" aria-label="翻译方向">
+              <label><input type="radio" name="dir" value="en2zh" checked><span>英 → 中</span></label>
+              <label><input type="radio" name="dir" value="zh2en"><span>中 → 英</span></label>
+            </div>
+            <div class="segmented hidden" id="zhModeGroup" role="group" aria-label="中译英方式">
+              <label><input type="radio" name="zhMode" value="full" checked><span>全文英译</span></label>
+              <label><input type="radio" name="zhMode" value="keywords"><span>实词英译</span></label>
+            </div>
+            <div class="segmented" role="group" aria-label="对照方式">
+              <label><input type="radio" name="align" value="sentence" checked><span>按句对照</span></label>
+              <label><input type="radio" name="align" value="paragraph"><span>按段对照</span></label>
+            </div>
+            <div class="doc-file" id="docFileName"></div>
+            <button id="translateBtn" class="btn primary">生成中英对照</button>
+          </div>
+          <div id="docStatus" class="doc-status"></div>
+        </div>
+        <div id="docResult" class="panel doc-result hidden"></div>
+
+        <div class="panel doc-history-panel">
+          <div class="panel-head row-head">
+            <div>
+              <h2>历史记录</h2>
+              <p class="muted">每次生成的对照都会存入数据库，点击标题即可回到阅读页。</p>
+            </div>
+            <input id="docSearch" type="text" class="doc-search" placeholder="按标题搜索记录">
+          </div>
+          <div id="docHistory" class="doc-history"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-review" class="view">
+      <div class="container">
+        <div class="panel">
+          <div class="panel-head row-head">
+            <div>
+              <h2>复习</h2>
+              <p class="muted" id="reviewStats">今日待复习 0 · 生词 0</p>
+            </div>
+            <div class="segmented" id="reviewModes" role="group" aria-label="复习模式">
+              <button class="active" data-mode="flash">闪卡</button>
+              <button data-mode="quiz">测验</button>
+              <button data-mode="dictation">听写</button>
+            </div>
+          </div>
+          <div id="flashPane" class="review-pane">
+            <div id="flashCard" class="review-card"></div>
+          </div>
+          <div id="quizPane" class="review-pane hidden">
+            <div id="quizCard" class="review-card"></div>
+          </div>
+          <div id="dictationPane" class="review-pane hidden">
+            <div id="dictationCard" class="review-card"></div>
+          </div>
+          <p class="muted small review-note">闪卡按 SM-2 间隔重复调度：忘记后 10 分钟重来，记得或简单会逐步拉长间隔，达到 21 天自动标记「已掌握」。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-vocab" class="view">
+      <div class="container">
+        <div class="panel">
+          <div class="panel-head row-head">
+            <div>
+              <h2>生词本</h2>
+              <p class="muted" id="vocabStats">共 0 词 · 学习中 0 · 已掌握 0</p>
+            </div>
+            <div class="btn-row">
+              <button id="exportBtn" class="btn ghost sm">导出 CSV</button>
+              <button id="exportAnkiBtn" class="btn ghost sm">导出 Anki 牌组</button>
+            </div>
+          </div>
+          <div class="vocab-toolbar">
+            <input id="vocabSearch" type="text" placeholder="按单词筛选">
+            <div class="segmented" id="vocabFilters">
+              <button class="active" data-filter="all">全部</button>
+              <button data-filter="new">新词</button>
+              <button data-filter="learning">学习中</button>
+              <button data-filter="mastered">已掌握</button>
+            </div>
+          </div>
+          <div id="vocabList" class="vocab-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-settings" class="view">
+      <div class="container">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>设置</h2>
+            <p class="muted">API Key 只保存在本机的 config.json 中，由 server.js 读取，不会暴露给浏览器；生词与已查词卡保存在本地 SQLite 数据库 data/wordlens.db。</p>
+          </div>
+          <form id="settingsForm" class="settings-form">
+            <label>
+              <span>DeepSeek API Key</span>
+              <input type="password" id="apiKeyInput" placeholder="sk-…（留空则不修改已保存的 Key）" autocomplete="off">
+            </label>
+            <label>
+              <span>接口地址（Base URL）</span>
+              <input type="text" id="baseUrlInput" placeholder="https://api.deepseek.com">
+            </label>
+            <label>
+              <span>模型名称</span>
+              <input type="text" id="modelInput" placeholder="deepseek-chat">
+            </label>
+            <div class="form-actions">
+              <button type="submit" class="btn primary">保存设置</button>
+              <button type="button" id="testBtn" class="btn ghost">测试连接</button>
+              <span id="settingsStatus" class="muted"></span>
+            </div>
+            <div class="form-actions">
+              <button type="button" id="clearCacheBtn" class="btn ghost sm">清除词卡缓存（数据库）</button>
+              <span class="muted small">更换模型或想重新生成词卡时使用；生词本不受影响</span>
+            </div>
+          </form>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h2>自定义词典</h2>
+            <p class="muted">上传自己的词典文件，查词时优先命中本地词典，不再调用 AI；未命中的词仍会自动调用 AI 并缓存。</p>
+          </div>
+          <div class="form-actions" style="margin-top:16px">
+            <input type="file" id="dictFileInput" accept=".csv,.tsv,.txt,.json,.md" hidden>
+            <button type="button" id="importDictBtn" class="btn primary">上传词典文件</button>
+            <button type="button" id="clearDictBtn" class="btn ghost sm">清空自定义词典</button>
+            <span id="dictStatus" class="muted">尚未导入</span>
+          </div>
+          <p class="muted small" style="margin-top:12px">
+            文本格式：每行 <code>单词,音标,释义</code>（Tab 或逗号分隔；多个释义用 <code>;</code> 分隔，词性可写成 <code>n. 释义</code>）。<br>
+            JSON 格式：<code>[{"word":"abandon","phonetic":"/əˈbændən/","senses":[{"pos":"v.","meaning":"放弃"}]}]</code>
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="wordPopover" class="popover hidden"><div id="popBody"></div></div>
+  <div id="toast" class="toast hidden"></div>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "wordlens",
+  "version": "1.0.0",
+  "private": true,
+  "description": "个人英语学习工作台：AI 词典、文档中英对照、生词本",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "anki-apkg-export": "^5.0.0",
+    "mammoth": "^1.9.0"
+  }
+}
