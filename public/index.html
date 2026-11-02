@@ -121,7 +121,7 @@
           <div id="dictationPane" class="review-pane hidden">
             <div id="dictationCard" class="review-card"></div>
           </div>
-          <p class="muted small review-note">闪卡按 SM-2 间隔重复调度：忘记后 10 分钟重来，记得或简单会逐步拉长间隔，达到 21 天自动标记「已掌握」。</p>
+          <p class="muted small review-note">闪卡按 SM-2 间隔重复调度：忘记后 10 分钟重来，记得或简单会逐步拉长间隔，达到 21 天自动标记「已掌握」。<br>键盘：<kbd>空格</kbd> 显示答案 · <kbd>1</kbd> 忘记 · <kbd>2</kbd> 模糊 · <kbd>3</kbd> 记得 · <kbd>4</kbd> 简单。</p>
         </div>
       </div>
     </section>
@@ -179,11 +179,13 @@
 
     <section id="view-settings" class="view">
       <div class="container">
-        <div class="panel">
-          <div class="panel-head">
-            <h2>设置</h2>
+        <details class="panel group" open>
+          <summary>
+            <span class="group-title">设置 · 模型与 API</span>
+            <span class="group-chevron">▾</span>
+          </summary>
+          <div class="group-body">
             <p class="muted">API Key 只保存在本机的 config.json 中，由 server.js 读取，不会暴露给浏览器；生词与已查词卡保存在本地 SQLite 数据库 data/wordlens.db。</p>
-          </div>
           <form id="settingsForm" class="settings-form">
             <label>
               <span>DeepSeek API Key</span>
@@ -207,12 +209,15 @@
               <span class="muted small">更换模型或想重新生成词卡时使用；生词本不受影响</span>
             </div>
           </form>
-        </div>
-        <div class="panel">
-          <div class="panel-head">
-            <h2>自定义词典</h2>
-            <p class="muted">上传自己的词典文件，查词时优先命中本地词典，不再调用 AI；未命中的词仍会自动调用 AI 并缓存。</p>
           </div>
+        </details>
+        <details class="panel group" open>
+          <summary>
+            <span class="group-title">自定义词典</span>
+            <span class="group-chevron">▾</span>
+          </summary>
+          <div class="group-body">
+          <p class="muted">上传自己的词典文件，查词时优先命中本地词典，不再调用 AI；未命中的词仍会自动调用 AI 并缓存。</p>
           <div class="form-actions" style="margin-top:16px">
             <input type="file" id="dictFileInput" accept=".csv,.tsv,.txt,.json,.md" hidden>
             <button type="button" id="importDictBtn" class="btn primary">上传词典文件</button>
@@ -231,7 +236,8 @@
             <div id="dictList" class="dict-list"></div>
             <button type="button" id="dictMoreBtn" class="btn ghost sm hidden">加载更多</button>
           </div>
-        </div>
+          </div>
+        </details>
       </div>
     </section>
   </main>

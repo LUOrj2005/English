@@ -1161,6 +1161,9 @@ async function loadStatus() {
   try {
     const status = await request('/api/status');
     el.aiState.innerHTML = `<i class="${status.keyConfigured ? 'ok' : 'bad'}"></i><span>${status.keyConfigured ? 'AI 已就绪' : '未配置 Key'}</span>`;
+    el.aiState.title = status.keyConfigured
+      ? `AI 已就绪 · ${status.model || ''}`.trim()
+      : '未配置 API Key，请到设置页填写';
     el.vocabCount.textContent = String(status.vocabCount || 0);
     review.dueCount = Number(status.dueCount) || 0;
     reviewStatsText();
@@ -1175,6 +1178,7 @@ async function loadStatus() {
     loadDictPage(true);
   } catch (err) {
     el.aiState.innerHTML = '<i class="bad"></i><span>服务未连接</span>';
+    el.aiState.title = '无法连接到本地服务，请确认 server.js 正在运行';
   }
 }
 
@@ -1588,8 +1592,63 @@ $('#wordBackBtn').addEventListener('click', () => switchView('vocab'));
 $('#wordPrevBtn').addEventListener('click', () => navWordDetail(-1));
 $('#wordNextBtn').addEventListener('click', () => navWordDetail(1));
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Enter' && event.target && event.target.id === 'dictationInput') {
+  const target = event.target;
+  const tag = target && target.tagName;
+  const typing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (target && target.isContentEditable);
+
+  if (event.key === '/' && !typing) {
+    event.preventDefault();
+    switchView('dict');
+    el.dictInput.focus();
+    el.dictInput.select();
+    return;
+  }
+  if (tag === 'INPUT' && target.id === 'dictationInput' && event.key === 'Enter') {
+    event.preventDefault();
     submitDictation();
+    return;
+  }
+  if (typing) return;
+
+  if (event.key === 'Escape') {
+    if ($('#view-word').classList.contains('active')) {
+      switchView('vocab');
+      return;
+    }
+    hidePopover();
+    return;
+  }
+
+  if ($('#view-word').classList.contains('active')) {
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      navWordDetail(-1);
+      return;
+    }
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      navWordDetail(1);
+      return;
+    }
+    if (event.key === ' ' && !(target && target.closest('button, a'))) {
+      event.preventDefault();
+      speakWord(state.detailWord);
+      return;
+    }
+  }
+
+  if ($('#view-review').classList.contains('active') && !$('#flashPane').classList.contains('hidden')) {
+    if (!review.revealed && (event.key === 'Enter' || event.key === ' ')) {
+      event.preventDefault();
+      review.revealed = true;
+      renderFlash();
+      return;
+    }
+    const grades = { '1': 'forgot', '2': 'hard', '3': 'good', '4': 'easy' };
+    if (review.revealed && grades[event.key]) {
+      event.preventDefault();
+      gradeCurrent(grades[event.key]);
+    }
   }
 });
 $('#wordAiBtn').addEventListener('click', () => {

@@ -285,11 +285,49 @@ async function init() {
     state.vocabSet = new Set((Array.isArray(vocab) ? vocab : [])
       .map((it) => String(it.word || '').trim().toLowerCase()).filter(Boolean));
     renderDoc();
+    updateProgress();
   } catch (err) {
     el.title.textContent = '记录加载失败';
     el.body.innerHTML = `<div class="empty-line">${esc(err.message)}</div>`;
   }
 }
+
+/* ---------- 阅读视图控制 ---------- */
+const readerView = { scale: 1, hideZh: false };
+const progressBar = $('#readerProgressBar');
+const zhToggleBtn = $('#zhToggleBtn');
+
+function applyReaderView() {
+  document.body.style.setProperty('--reader-scale', String(readerView.scale));
+  document.body.classList.toggle('hide-zh', readerView.hideZh);
+  zhToggleBtn.textContent = readerView.hideZh ? '显示中文' : '仅英文';
+  zhToggleBtn.setAttribute('aria-pressed', String(readerView.hideZh));
+}
+
+function updateProgress() {
+  if (!progressBar) return;
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = max > 0 ? Math.min(100, Math.max(0, (window.scrollY / max) * 100)) : 0;
+  progressBar.style.width = `${pct}%`;
+}
+
+zhToggleBtn.addEventListener('click', () => {
+  readerView.hideZh = !readerView.hideZh;
+  applyReaderView();
+});
+
+$('#fontDownBtn').addEventListener('click', () => {
+  readerView.scale = Math.max(0.85, Math.round((readerView.scale - 0.1) * 10) / 10);
+  applyReaderView();
+});
+
+$('#fontUpBtn').addEventListener('click', () => {
+  readerView.scale = Math.min(1.4, Math.round((readerView.scale + 0.1) * 10) / 10);
+  applyReaderView();
+});
+
+window.addEventListener('scroll', updateProgress, { passive: true });
+window.addEventListener('resize', updateProgress);
 
 /* ---------- 事件 ---------- */
 $('#backBtn').addEventListener('click', () => {
