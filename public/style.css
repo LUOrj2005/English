@@ -553,58 +553,22 @@ kbd {
 .toast.error { background: #991b1b; }
 
 /* ---------- 响应式 ---------- */
+/* 平板：保持原来的换行式顶栏布局 */
 @media (max-width: 900px) {
-  .topbar {
-    height: 56px;
-    padding: 0 12px;
-    gap: 10px;
-    flex-wrap: nowrap;
-    /* backdrop-filter 会让内部 fixed 子元素以顶栏为参照，这里关闭 */
-    backdrop-filter: none;
-    background: var(--panel);
-  }
-  /* 平板/手机：标签栏改为底部固定导航 */
-  .tabs {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 30;
-    width: auto;
-    margin: 0;
-    padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
-    gap: 2px;
-    overflow-x: auto;
-    background: var(--topbar);
-    border-top: 1px solid var(--line);
-    backdrop-filter: blur(10px);
-  }
-  .tab {
-    flex: 1 0 auto;
-    min-height: 44px;
-    padding: 6px 10px;
-    justify-content: center;
-    white-space: nowrap;
-  }
-  .ai-state { position: static; margin-left: auto; }
-  .ai-state span { display: none; }
-  main { padding: 18px 12px 88px; }
+  .topbar { height: auto; flex-wrap: wrap; padding: 10px 14px; gap: 8px; position: sticky; }
+  .tabs { margin-left: 0; width: 100%; overflow-x: auto; }
+  .ai-state { position: absolute; top: 16px; right: 16px; }
+  main { padding: 18px 12px 80px; }
   .doc-grid { grid-template-columns: 1fr; }
   .row { grid-template-columns: 1fr; }
   .col.zh { border-left: 0; border-top: 1px dashed var(--line); }
   .doc-cols-head { display: none; }
   .word-title h2 { font-size: 26px; }
   .doc-file { margin-left: 0; }
-  /* 触控友好：可点区域不小于 44px，输入字号不小于 16px */
-  .btn { min-height: 44px; }
-  .btn.sm { min-height: 40px; }
-  .icon-btn { min-width: 44px; min-height: 44px; }
-  input, textarea, select { font-size: 16px; }
-  .doc-search { width: 100%; min-width: 0; }
-  .vocab-toolbar { top: 64px; }
-  #view-word .panel-head { top: 56px; }
-  .reader-head { flex-wrap: wrap; }
-  .zr-row, .reader-head { padding-left: 16px; padding-right: 16px; }
+  /* 吸顶元素避让换行后的较高顶栏 */
+  .vocab-toolbar { top: 92px; }
+  #view-word .panel-head { top: 92px; }
+  .reader-progress { top: 92px; }
 }
 
 /* ---------- 通用隐藏 ---------- */
@@ -766,7 +730,7 @@ body.hide-zh .zr-zh { display: none; }
   .brand .sub { display: none; }
   .tabs { gap: 2px; }
   .tab { padding: 6px 6px; white-space: nowrap; font-size: 12px; }
-  main { padding: 14px 10px calc(84px + env(safe-area-inset-bottom)); }
+  main { padding: 14px 10px 80px; }
 
   .panel, .search-card { padding: 16px; }
   .group { padding: 0; }
@@ -790,7 +754,7 @@ body.hide-zh .zr-zh { display: none; }
     left: 8px !important;
     right: 8px;
     top: auto !important;
-    bottom: calc(70px + env(safe-area-inset-bottom));
+    bottom: 8px;
     width: auto !important;
     max-height: 74vh;
     border-radius: 16px;
@@ -807,7 +771,6 @@ body.hide-zh .zr-zh { display: none; }
 
   .reader-head { padding: 16px; flex-wrap: wrap; }
   .reader-tools { width: 100%; justify-content: flex-end; }
-  .reader-progress { top: 56px; }
   .zr-row { padding: 10px 16px; }
   .reader-top .muted { display: none; }
   .dh-row { flex-wrap: wrap; }
@@ -816,17 +779,17 @@ body.hide-zh .zr-zh { display: none; }
   .toast { max-width: 92vw; }
 }
 
-/* ---------- 触控平板：按指针类型启用，不依赖屏幕宽度 ---------- */
-@media (any-pointer: coarse) {
+/* ---------- 仅手机：底部导航 + 触控适配 ---------- */
+@media (max-width: 600px) {
   .topbar {
     height: 56px;
     padding: 0 12px;
     gap: 10px;
     flex-wrap: nowrap;
+    /* backdrop-filter 会让内部 fixed 子元素以顶栏为参照，这里关闭 */
     backdrop-filter: none;
     background: var(--panel);
   }
-  /* 底部导航在平板横屏时居中，避免拉得过宽 */
   .tabs {
     position: fixed;
     left: 0;
@@ -834,8 +797,7 @@ body.hide-zh .zr-zh { display: none; }
     bottom: 0;
     z-index: 30;
     width: auto;
-    max-width: 720px;
-    margin: 0 auto;
+    margin: 0;
     padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
     gap: 2px;
     overflow-x: auto;
@@ -852,7 +814,7 @@ body.hide-zh .zr-zh { display: none; }
   }
   .ai-state { position: static; margin-left: auto; }
   .ai-state span { display: none; }
-  main { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
+  main { padding: 16px 10px calc(84px + env(safe-area-inset-bottom)); }
   .btn { min-height: 44px; }
   .btn.sm { min-height: 40px; }
   .icon-btn { min-width: 44px; min-height: 44px; }
@@ -860,6 +822,7 @@ body.hide-zh .zr-zh { display: none; }
   .vocab-toolbar { top: 64px; }
   #view-word .panel-head { top: 56px; }
   .reader-progress { top: 56px; }
+  .popover { bottom: calc(70px + env(safe-area-inset-bottom)); }
 }
 
 /* ---------- 暗色模式 ---------- */
