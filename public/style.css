@@ -27,12 +27,118 @@
 html, body { margin: 0; padding: 0; }
 
 body {
-  background: var(--bg);
+  /* 浅蓝色渐变 + 更明显的手绘虚线纹理 */
+  background:
+    /* 前三层 radial-gradient 用 fixed，保证渐变层不随滚动移动 */
+    radial-gradient(ellipse at 0% 0%, rgba(59, 130, 246, .14), transparent 55%),
+    radial-gradient(ellipse at 100% 100%, rgba(99, 102, 241, .12), transparent 50%),
+    radial-gradient(circle at 50% 30%, rgba(147, 197, 253, .08), transparent 60%),
+    /* 最底层 SVG 虚线纹理用 scroll，与固定渐变层形成轻微视差（背景第 4 层） */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'><path d='M0 20 L80 20' stroke='%23c7d2fe' stroke-width='1' stroke-dasharray='4 5' opacity='0.85'/><path d='M0 50 L80 50' stroke='%23bfdbfe' stroke-width='0.8' stroke-dasharray='3 7' opacity='0.7'/></svg>"),
+    #eef2ff;  /* 浅蓝色底色 */
+  /* 视差：渐变 fixed，纹理 scroll。浏览器会对所有层应用同一个 attachment，
+     所以用 background-attachment 分别设：渐变 fixed，SVG scroll ——
+     但单一 background-attachment 作用于所有层，因此拆成两次 background 声明来分离。 */
+  background-attachment: fixed, fixed, fixed, scroll;
+  position: relative;
+  min-height: 100vh;
   color: var(--ink);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 15px;
   line-height: 1.6;
 }
+
+/* ---------- 背景装饰层 ---------- */
+.bg-deco {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Q 版小鱼人：降透明度，让新的小图标主导（大背景只做极淡氛围） */
+.deco-img {
+  position: absolute;
+  opacity: .05;
+  filter: saturate(.4) brightness(1.06);
+  object-fit: contain;
+  max-width: 42vw;
+  max-height: 40vh;
+}
+.d1 { top: 80px;  left: 20px;    width: 200px; height: 200px; }
+.d2 { bottom: 40px; right: 20px; width: 240px; height: 240px; opacity: .045; }
+.d3 { bottom: 60px; left: 20px;  width: 180px; height: 180px; opacity: .04; }
+.d4 { top: 120px;  right: 40px; width: 160px; height: 160px; opacity: .035; }
+
+/* 手绘小花簇：提高透明度，让装饰更饱满 */
+.deco-flower {
+  position: absolute;
+  pointer-events: none;
+}
+.f1 { bottom: 0; left: 0;  width: 280px; height: 186px; opacity: .75; }
+.f2 { top: 20px; right: 0; width: 260px; height: 173px; opacity: .68; transform: scaleX(-1); }
+
+/* ---------- 散落装饰层（极淡，填充空旷） ---------- */
+.container { position: relative; }
+/* container 右下小草叶 + 散落小花瓣 */
+.container::before {
+  content: "";
+  position: absolute;
+  bottom: -30px;
+  right: -40px;
+  width: 200px;
+  height: 160px;
+  pointer-events: none;
+  opacity: .45;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 160'><path d='M200 140 Q210 100 220 140 Q230 110 240 140' fill='none' stroke='%23a7c7a8' stroke-width='1.2' stroke-linecap='round'/><path d='M215 140 L215 115 M225 140 L225 120' stroke='%23a7c7a8' stroke-width='1' stroke-linecap='round'/><ellipse cx='180' cy='80' rx='5' ry='3' transform='rotate(-20 180 80)' fill='%23f4d0d0' opacity='.6'/><ellipse cx='220' cy='50' rx='4' ry='2.5' transform='rotate(40 220 50)' fill='%23f4d0d0' opacity='.5'/></svg>") no-repeat center/contain;
+  z-index: 0;
+}
+.container > * { position: relative; z-index: 1; }
+
+/* 顶栏底部手绘波浪线装饰 */
+.topbar::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 8px;
+  pointer-events: none;
+  opacity: .3;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='8' viewBox='0 0 60 8'><path d='M0 4 Q15 0 30 4 Q45 8 60 4' fill='none' stroke='%23a5b4fc' stroke-width='1.2'/></svg>") repeat-x;
+}
+
+/* panel 内迷你 Q 版（生词本 / 文档 / 复习） */
+.panel-mascot {
+  position: absolute;
+  pointer-events: none;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid rgba(165, 180, 252, .35);
+  background: #ffffff;
+  filter: saturate(.5) brightness(1.05);
+  opacity: .82;
+}
+.pm1 { /* 生词本：右下 */ bottom: -18px; right: -18px; width: 86px; height: 86px; transform: rotate(6deg); }
+.pm2 { /* 文档：左下 */ bottom: -16px; left: -16px;  width: 78px; height: 78px; transform: rotate(-8deg); }
+.pm3 { /* 复习：右中 */ top: 30%;    right: -14px; width: 72px; height: 72px; transform: rotate(12deg); }
+
+/* panel::after 左下角小草叶（现有 ::before 是右上角小花） */
+.panel::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 14px;
+  width: 46px;
+  height: 26px;
+  opacity: .32;
+  pointer-events: none;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 40'><path d='M0 28 Q18 8 36 28 Q54 48 72 28' fill='none' stroke='%23818cf8' stroke-width='1.2' stroke-linecap='round'/><path d='M18 28 L18 16 M28 28 L28 20 M44 28 L44 20 M54 28 L54 16' stroke='%23a5b4fc' stroke-width='1' stroke-linecap='round'/></svg>") no-repeat center/contain;
+}
+
+/* 内容层整体抬到装饰之上 */
+.topbar, main, footer { position: relative; z-index: 1; }
 
 /* ---------- 顶栏 ---------- */
 .topbar {
@@ -50,6 +156,30 @@ body {
 }
 
 .brand { display: flex; align-items: center; gap: 10px; }
+
+/* 顶栏迷你 Q 版：32px 方形，圆角裁剪，低饱和不抢品牌 */
+.brand-mascot {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  object-fit: cover;
+  flex: none;
+  margin: 0 2px;
+  opacity: .9;
+  filter: saturate(.55) brightness(1.05);
+  border: 1px solid rgba(165, 180, 252, .4);
+  background: #ffffff;
+}
+
+/* 顶栏装饰小花：低透明度、紧凑，不抢品牌注意力 */
+.brand-charm {
+  width: 28px;
+  height: 28px;
+  margin: 0 -4px 0 2px;
+  opacity: .72;
+  flex: none;
+  filter: drop-shadow(0 1px 1px rgba(165, 180, 252, .3));
+}
 
 .logo {
   width: 32px;
@@ -156,11 +286,24 @@ kbd {
 
 /* ---------- 词典页 ---------- */
 .search-card {
+  position: relative;
   background: var(--panel);
-  border: 1px solid var(--line);
+  border: 1px dashed var(--line);
   border-radius: var(--radius);
   padding: 22px;
-  box-shadow: var(--shadow);
+  box-shadow: 0 1px 3px rgba(148, 163, 184, .08);
+}
+/* 右上角花纹角标：内嵌 SVG 蓝色五瓣花 + 黄芯，不遮挡搜索框 */
+.search-card::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 36px;
+  height: 36px;
+  opacity: .38;
+  pointer-events: none;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><g fill='%23a5b4fc' stroke='%236366f1' stroke-width='0.8'><path d='M20 8 Q27 14 20 20 Q13 14 20 8Z'/><path d='M32 20 Q26 27 20 20 Q26 13 32 20Z'/><path d='M20 32 Q13 26 20 20 Q27 26 20 32Z'/><path d='M8 20 Q14 13 20 20 Q14 27 8 20Z'/><path d='M14 14 Q20 8 26 14 Q20 20 14 14Z'/><path d='M26 26 Q20 32 14 26 Q20 20 26 26Z'/></g><circle cx='20' cy='20' r='3' fill='%23fef3c7' stroke='%23f59e0b' stroke-width='0.6'/></svg>") no-repeat center/contain;
 }
 
 .search-label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 10px; letter-spacing: .02em; }
@@ -183,14 +326,62 @@ kbd {
 .result-area { margin-top: 18px; }
 
 .word-card {
+  position: relative;
   background: var(--panel);
-  border: 1px solid var(--line);
+  border: 1px dashed var(--line);
   border-radius: var(--radius);
   padding: 24px;
-  box-shadow: var(--shadow);
+  box-shadow: 0 1px 3px rgba(148, 163, 184, .08);
+}
+/* 词卡角标：右上统一五瓣花，左下保留手绘波浪线（差异化装饰） */
+.word-card::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 40px;
+  height: 40px;
+  opacity: .35;
+  pointer-events: none;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><g fill='%23a5b4fc' stroke='%236366f1' stroke-width='0.8'><path d='M20 8 Q27 14 20 20 Q13 14 20 8Z'/><path d='M32 20 Q26 27 20 20 Q26 13 32 20Z'/><path d='M20 32 Q13 26 20 20 Q27 26 20 32Z'/><path d='M8 20 Q14 13 20 20 Q14 27 8 20Z'/><path d='M14 14 Q20 8 26 14 Q20 20 14 14Z'/><path d='M26 26 Q20 32 14 26 Q20 20 26 26Z'/></g><circle cx='20' cy='20' r='3' fill='%23fef3c7' stroke='%23f59e0b' stroke-width='0.6'/></svg>") no-repeat center/contain;
+}
+.word-card::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 16px;
+  width: 32px;
+  height: 20px;
+  opacity: .30;
+  pointer-events: none;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 40'><path d='M0 25 Q20 5 40 25 Q60 45 80 25' fill='none' stroke='%23818cf8' stroke-width='1.2' stroke-linecap='round'/><path d='M20 25 L20 15 M30 25 L30 18 M50 25 L50 18 M60 25 L60 15' stroke='%23818cf8' stroke-width='1' stroke-linecap='round'/></svg>") no-repeat center/contain;
 }
 
 .word-card.compact { padding: 18px; border: 0; box-shadow: none; border-radius: 0; }
+.word-card.compact::before, .word-card.compact::after { display: none; }
+
+/* ---------- hover 微动效（仅限非 reduced-motion） ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  /* 卡片 hover 时角标轻微飘移，给静态装饰加一点点"呼吸感" */
+  .search-card:hover::before,
+  .panel:hover::before {
+    transform: translate(2px, -2px) rotate(6deg);
+    transition: transform .4s cubic-bezier(.22, .61, .36, 1);
+  }
+  .word-card:hover::before {
+    transform: translate(3px, -3px) rotate(8deg);
+    transition: transform .4s cubic-bezier(.22, .61, .36, 1);
+  }
+  .word-card:hover::after {
+    transform: translateY(-2px);
+    transition: transform .4s cubic-bezier(.22, .61, .36, 1);
+  }
+  /* 初始状态也给 transition，避免 transform 变化突变 */
+  .search-card::before, .panel::before,
+  .word-card::before, .word-card::after {
+    transition: transform .4s cubic-bezier(.22, .61, .36, 1);
+  }
+}
 
 .word-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
 .word-title h2 { margin: 0; font-size: 30px; letter-spacing: -.01em; line-height: 1.2; }
@@ -276,11 +467,24 @@ kbd {
 
 /* ---------- 面板 ---------- */
 .panel {
+  position: relative;
   background: var(--panel);
-  border: 1px solid var(--line);
+  border: 1px dashed var(--line);
   border-radius: var(--radius);
   padding: 22px;
-  box-shadow: var(--shadow);
+  box-shadow: 0 1px 3px rgba(148, 163, 184, .06);
+}
+/* 设置/生词/复习面板：右上统一五瓣花角标，与 search-card / word-card 同款 */
+.panel::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  right: 18px;
+  width: 30px;
+  height: 30px;
+  opacity: .28;
+  pointer-events: none;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><g fill='%23a5b4fc' stroke='%236366f1' stroke-width='0.8'><path d='M20 8 Q27 14 20 20 Q13 14 20 8Z'/><path d='M32 20 Q26 27 20 20 Q26 13 32 20Z'/><path d='M20 32 Q13 26 20 20 Q27 26 20 32Z'/><path d='M8 20 Q14 13 20 20 Q14 27 8 20Z'/><path d='M14 14 Q20 8 26 14 Q20 20 14 14Z'/><path d='M26 26 Q20 32 14 26 Q20 20 26 26Z'/></g><circle cx='20' cy='20' r='3' fill='%23fef3c7' stroke='%23f59e0b' stroke-width='0.6'/></svg>") no-repeat center/contain;
 }
 
 .panel + .panel { margin-top: 18px; }
@@ -781,6 +985,14 @@ body.hide-zh .zr-zh { display: none; }
 
 /* ---------- 仅手机：底部导航 + 触控适配 ---------- */
 @media (max-width: 600px) {
+  /* 手机屏幕窄，隐藏装饰避免拥挤 */
+  .bg-deco { display: none; }
+  body { background: var(--bg); }
+  /* 新增装饰在手机上也隐藏 */
+  .brand-mascot { display: none; }
+  .panel-mascot { display: none; }
+  .container::before { display: none; }
+  .topbar::before { display: none; }
   .topbar {
     height: 56px;
     padding: 0 12px;
@@ -858,4 +1070,22 @@ body.hide-zh .zr-zh { display: none; }
     box-shadow: 0 0 0 3px rgba(96, 165, 250, .2);
   }
   .doc-search:focus { outline-color: #1e3a8a; }
+  /* 暗色模式：靛蓝墨纸 + 靛蓝系纹理 + 装饰降透明度 */
+  body {
+    background:
+      radial-gradient(ellipse at 0% 0%, rgba(99, 102, 241, .18), transparent 55%),
+      radial-gradient(ellipse at 100% 100%, rgba(129, 140, 248, .14), transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(165, 180, 252, .07), transparent 70%),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'><path d='M0 20 L80 20' stroke='%233730a3' stroke-width='1' stroke-dasharray='4 5' opacity='0.55'/><path d='M0 50 L80 50' stroke='%234338ca' stroke-width='0.8' stroke-dasharray='3 7' opacity='0.45'/></svg>"),
+      var(--bg);
+    background-attachment: fixed, fixed, fixed, scroll;
+  }
+  .deco-img { opacity: .10 !important; filter: brightness(.55) saturate(.5); }
+  .deco-flower { opacity: .25 !important; }
+  /* 暗色：顶栏迷你 Q 版更暗、border 换靛蓝 */
+  .brand-mascot { filter: brightness(.5) saturate(.4); border-color: rgba(129, 140, 248, .45); }
+  .panel-mascot { filter: brightness(.5) saturate(.4); border-color: rgba(129, 140, 248, .45); background: #111c2e; }
+  /* 暗色：顶栏波浪线、container 小草叶降透明度 */
+  .topbar::before { opacity: .18; }
+  .container::before { opacity: .22; }
 }
