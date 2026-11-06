@@ -3,9 +3,14 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const dns = require('node:dns');
+
+// 当前网络环境 IPv6 路由不可用（如 speech.platform.bing.com 解析到 IPv6 会连接失败），
+// 强制优先 IPv4，保证 Edge TTS 及上游接口可达
+dns.setDefaultResultOrder('ipv4first');
 
 // 服务端 TTS 兜底：浏览器在非安全上下文（如 http 局域网访问）不提供 speechSynthesis，
-// 由服务端代理有道发音接口返回音频，前端用 <audio> 播放
+// 由服务端代理发音接口返回音频，前端用 <audio> 播放
 const ttsCache = new Map();
 
 const ROOT = __dirname;
@@ -1196,12 +1201,48 @@ async function handleVocab(req, res, url) {
   return sendJSON(res, 404, { error: '接口不存在' });
 }
 
-// 服务端 TTS：代理有道 dictvoice 发音（美式 type=2 / 英式 type=1），带内存缓存
+// 服务端 TTS：优先走有道 dictvoice（单词发音快、可缓存）；
+// 有道无法合成任意句子（对长句/不在词典里的短语返回 500 "returned null audio"）时，
+// 回退到微软 Edge 在线 TTS（WebSocket，免费无密钥，支持任意中英文句子）
+async function fetchYoudaoTTS(text, isZh, type) {
+  const target = isZh
+    ? 'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(text) + '&le=zh'
+    : 'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(text) + '&type=' + type;
+  const r = await fetch(target, {
+    headers: { 'User-Agent': 'Mozilla/5.0 WordLens' },
+    signal: AbortSignal.timeout(15000)
+  });
+  if (!r.ok) return null;
+  const buf = Buffer.from(await r.arrayBuffer());
+  return buf.length ? buf : null;
+}
+
+async function synthEdgeTTS(text, isZh) {
+  const { MsEdgeTTS, OUTPUT_FORMAT } = require('msedge-tts');
+  const voice = isZh ? 'zh-CN-XiaoxiaoNeural' : 'en-US-AriaNeural';
+  const tts = new MsEdgeTTS();
+  try {
+    await tts.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
+    const { audioStream } = await tts.toStream(text);
+    const chunks = [];
+    await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('合成超时')), 45000);
+      audioStream.on('data', (c) => chunks.push(c));
+      audioStream.on('end', () => { clearTimeout(timer); resolve(); });
+      audioStream.on('error', (e) => { clearTimeout(timer); reject(e); });
+    });
+    const buf = Buffer.concat(chunks);
+    return buf.length ? buf : null;
+  } finally {
+    try { tts.close(); } catch (e) { /* ignore */ }
+  }
+}
+
 async function handleTTS(req, res, url) {
   const text = String(url.searchParams.get('text') || '').trim();
   if (!text) return sendJSON(res, 400, { error: 'text 不能为空' });
   if (text.length > 300) return sendJSON(res, 400, { error: 'text 过长' });
-  // 含中文字符 → 中文发音（le=zh），否则英语发音（type=2 美式 / type=1 英式）
+  // 含中文字符 → 中文发音，否则英语发音
   const isZh = /[\u4e00-\u9fa5]/.test(text);
   const lang = isZh ? 'zh' : 'en';
   const type = url.searchParams.get('type') === '1' ? '1' : '2';
@@ -1213,24 +1254,30 @@ async function handleTTS(req, res, url) {
     return res.end(cached);
   }
 
+  let buf = null;
+  let errMsg = '';
   try {
-    const target = isZh
-      ? 'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(text) + '&le=zh'
-      : 'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(text) + '&type=' + type;
-    const r = await fetch(target, {
-      headers: { 'User-Agent': 'Mozilla/5.0 WordLens' },
-      signal: AbortSignal.timeout(15000)
-    });
-    if (!r.ok) return sendJSON(res, 502, { error: 'TTS 上游返回 ' + r.status });
-    const buf = Buffer.from(await r.arrayBuffer());
-    if (!buf.length) return sendJSON(res, 502, { error: 'TTS 上游返回空内容' });
-    if (ttsCache.size > 500) ttsCache.clear();
-    ttsCache.set(cacheKey, buf);
-    res.writeHead(200, { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'public, max-age=86400' });
-    res.end(buf);
+    buf = await fetchYoudaoTTS(text, isZh, type);
+    if (!buf) errMsg = '有道返回空或非 200';
   } catch (err) {
-    return sendJSON(res, 502, { error: 'TTS 获取失败：' + err.message });
+    errMsg = '有道获取失败：' + err.message;
   }
+
+  if (!buf) {
+    try {
+      buf = await synthEdgeTTS(text, isZh);
+      if (!buf) errMsg += '；Edge TTS 返回空';
+    } catch (err) {
+      errMsg += '；Edge TTS 失败：' + err.message;
+    }
+  }
+
+  if (!buf) return sendJSON(res, 502, { error: 'TTS 获取失败：' + errMsg });
+
+  if (ttsCache.size > 500) ttsCache.clear();
+  ttsCache.set(cacheKey, buf);
+  res.writeHead(200, { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'public, max-age=86400' });
+  res.end(buf);
 }
 
 async function handleAPI(req, res, url) {

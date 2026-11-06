@@ -272,7 +272,15 @@ if (window.speechSynthesis) {
 let ttsAudioEl = null;
 function speakViaAudio(text) {
   const src = '/api/tts?type=2&text=' + encodeURIComponent(String(text).trim());
-  if (!ttsAudioEl) ttsAudioEl = new Audio();
+  if (!ttsAudioEl) {
+    ttsAudioEl = new Audio();
+    // 兜底：部分浏览器（如平板内置浏览器）拿到非音频响应时 play() 不一定 reject，
+    // 而是在元素上触发 error，这里统一提示，避免“喇叭亮了但没声音也没提示”
+    ttsAudioEl.addEventListener('error', () => {
+      const e = ttsAudioEl && ttsAudioEl.error;
+      toast('朗读播放失败：' + (e && e.message ? e.message : '请检查网络或服务'), 'error');
+    });
+  }
   try { ttsAudioEl.pause(); } catch (e) { /* ignore */ }
   ttsAudioEl.src = src;
   const p = ttsAudioEl.play();

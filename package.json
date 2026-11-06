@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "anki-apkg-export": "^5.0.0",
-    "mammoth": "^1.9.0"
+    "mammoth": "^1.9.0",
+    "msedge-tts": "^2.1.1"
   }
 }
