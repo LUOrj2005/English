@@ -88,6 +88,14 @@ function openDB() {
       seg_count INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS gen_sentences (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      en TEXT NOT NULL,
+      zh TEXT NOT NULL DEFAULT '',
+      category TEXT NOT NULL DEFAULT '未分类',
+      type TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL
+    );
   `);
   ensureVocabColumns();
   migrateVocabJson();
@@ -727,6 +735,69 @@ async function handleDocuments(req, res, url) {
   return sendJSON(res, 404, { error: '接口不存在' });
 }
 
+/* ---------- 佳句库 ---------- */
+function rowToSentence(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    en: row.en || '',
+    zh: row.zh || '',
+    category: row.category || '未分类',
+    type: row.type || '',
+    createdAt: row.created_at
+  };
+}
+
+function listSentences() {
+  return db.prepare('SELECT * FROM gen_sentences ORDER BY created_at DESC LIMIT 1000').all()
+    .map((row) => rowToSentence(row));
+}
+
+function saveSentence(payload) {
+  const en = String(payload.en || '').trim().slice(0, 1000);
+  if (!en) return null;
+  const zh = String(payload.zh || '').trim().slice(0, 1000);
+  const category = String(payload.category || '').trim().slice(0, 40) || '未分类';
+  const type = String(payload.type || '').trim().slice(0, 60);
+  const result = db.prepare(`
+    INSERT INTO gen_sentences (en, zh, category, type, created_at)
+    VALUES (?, ?, ?, ?, ?)
+  `).run(en, zh, category, type, new Date().toISOString());
+  return Number(result.lastInsertRowid);
+}
+
+async function handleSentences(req, res, url) {
+  const parts = url.pathname.split('/').filter(Boolean);
+  const id = parts[2] ? Number(parts[2]) : 0;
+
+  if (req.method === 'GET' && parts.length === 2) {
+    return sendJSON(res, 200, listSentences());
+  }
+
+  if (req.method === 'POST' && parts.length === 2) {
+    const raw = (await readBody(req, 1024 * 1024)).toString('utf8');
+    let body;
+    try {
+      body = JSON.parse(raw || '{}');
+    } catch (err) {
+      return sendJSON(res, 400, { error: '请求体不是合法 JSON' });
+    }
+    const sid = saveSentence(body);
+    if (!sid) return sendJSON(res, 400, { error: '英文内容不能为空' });
+    return sendJSON(res, 200, { ok: true, id: sid });
+  }
+
+  if (!id) return sendJSON(res, 404, { error: '接口不存在' });
+
+  if (req.method === 'DELETE' && parts.length === 3) {
+    const result = db.prepare('DELETE FROM gen_sentences WHERE id = ?').run(id);
+    if (!result.changes) return sendJSON(res, 404, { error: '记录不存在' });
+    return sendJSON(res, 200, { ok: true });
+  }
+
+  return sendJSON(res, 404, { error: '接口不存在' });
+}
+
 /* ---------- 通用 ---------- */
 function readJSON(file, fallback) {
   try {
@@ -1217,13 +1288,19 @@ async function fetchYoudaoTTS(text, isZh, type) {
   return buf.length ? buf : null;
 }
 
+// 转义 XML 特殊字符：msedge-tts 会把文本原样拼进 SSML，
+// 若含 & < > 会使 SSML 非法，Edge 直接断流（no turn.end）→ 502 → 前端报 “not support”
+function escapeSSML(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 async function synthEdgeTTS(text, isZh) {
   const { MsEdgeTTS, OUTPUT_FORMAT } = require('msedge-tts');
   const voice = isZh ? 'zh-CN-XiaoxiaoNeural' : 'en-US-AriaNeural';
   const tts = new MsEdgeTTS();
   try {
     await tts.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
-    const { audioStream } = await tts.toStream(text);
+    const { audioStream } = await tts.toStream(escapeSSML(text));
     const chunks = [];
     await new Promise((resolve, reject) => {
       const timer = setTimeout(() => reject(new Error('合成超时')), 45000);
@@ -1380,6 +1457,7 @@ async function handleAPI(req, res, url) {
   if (p === '/api/vocab') return handleVocab(req, res, url);
   if (p.startsWith('/api/vocab/')) return handleVocab(req, res, url);
   if (p === '/api/documents' || p.startsWith('/api/documents/')) return handleDocuments(req, res, url);
+  if (p === '/api/sentences' || p.startsWith('/api/sentences/')) return handleSentences(req, res, url);
 
   if (p === '/api/word-cards' && req.method === 'DELETE') {
     const result = db.prepare('DELETE FROM word_cards').run();

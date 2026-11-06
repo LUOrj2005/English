@@ -76,22 +76,37 @@ if (window.speechSynthesis) {
 
 // 服务端 TTS 兜底音频（浏览器不提供 speechSynthesis 或原生失败时使用）
 let ttsAudioEl = null;
+let ttsFailNotified = false;
 function speakViaAudio(text) {
   const src = '/api/tts?type=2&text=' + encodeURIComponent(String(text).trim());
+  ttsFailNotified = false;
+  // 失败时回查一次接口，把服务端真实错误（如 502）展示出来，避免只看到含糊的 “not support”
+  const reportFail = (fallback) => {
+    if (ttsFailNotified) return;
+    ttsFailNotified = true;
+    fetch(src).then(async (r) => {
+      if (!r.ok) {
+        const j = await r.json().catch(() => null);
+        throw new Error(j && j.error ? j.error : ('HTTP ' + r.status));
+      }
+      throw new Error(fallback);
+    }).catch((e) => {
+      toast('朗读失败：' + (e && e.message ? e.message : fallback), 'error');
+    });
+  };
   if (!ttsAudioEl) {
     ttsAudioEl = new Audio();
-    // 兜底：部分浏览器（如平板内置浏览器）拿到非音频响应时 play() 不一定 reject，
-    // 而是在元素上触发 error，这里统一提示，避免“喇叭亮了但没声音也没提示”
+    // 兜底：部分浏览器拿到非音频响应时 play() 不一定 reject，而是在元素上触发 error
     ttsAudioEl.addEventListener('error', () => {
       const e = ttsAudioEl && ttsAudioEl.error;
-      toast('朗读播放失败：' + (e && e.message ? e.message : '请检查网络或服务'), 'error');
+      reportFail(e && e.message ? e.message : '请检查网络或服务');
     });
   }
   try { ttsAudioEl.pause(); } catch (e) { /* ignore */ }
   ttsAudioEl.src = src;
   const p = ttsAudioEl.play();
   if (p && typeof p.catch === 'function') {
-    p.catch((e) => toast('朗读播放失败：' + (e && e.message ? e.message : '请检查网络或服务'), 'error'));
+    p.catch((e) => reportFail(e && e.message ? e.message : '请检查网络或服务'));
   }
 }
 

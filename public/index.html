@@ -177,7 +177,7 @@
           <div class="panel-head row-head">
             <div>
               <h2>佳句生成</h2>
-              <p class="muted">AI 随机生成四六级短语或作文语句，中英双语对照；点击英文单词可查释义，可朗读。</p>
+              <p class="muted">AI 随机生成四六级短语或作文语句，中英双语对照；可自定义类型、点击单词查释义、朗读并保存到佳句库。</p>
             </div>
             <div class="gen-controls">
               <div class="segmented" id="genTypeGroup" role="group" aria-label="内容类型">
@@ -188,13 +188,29 @@
                 <button type="button" class="active" data-gen-level="cet4">四级</button>
                 <button type="button" data-gen-level="cet6">六级</button>
               </div>
+              <input type="text" id="genCustomType" class="gen-custom-input" placeholder="自定义类型，如：商务邮件结尾（留空则用预设）">
               <button type="button" id="genRefreshBtn" class="btn primary" data-action="gen-refresh">换一批</button>
             </div>
           </div>
           <div id="genCard" class="gen-card"></div>
-          <p class="muted small gen-hint">键盘：<kbd>←</kbd>/<kbd>→</kbd> 切换 · <kbd>空格</kbd> 朗读 · <kbd>Enter</kbd> 换一批</p>
+          <p class="muted small gen-hint">键盘：<kbd>←</kbd>/<kbd>→</kbd> 切换 · <kbd>空格</kbd> 朗读 · <kbd>Enter</kbd> 换一批 · <kbd>S</kbd> 保存</p>
         </div>
       </div>
+
+      <div class="container" style="margin-top:18px">
+        <div class="panel panel-deco">
+          <div class="panel-head row-head">
+            <div>
+              <h2>我的佳句库</h2>
+              <p class="muted" id="savedMeta">已保存 0 条</p>
+            </div>
+            <input type="search" id="savedSearch" class="saved-search" placeholder="搜索英文或中文…">
+          </div>
+          <div id="savedCategoryBar" class="saved-cats"></div>
+          <div id="savedList" class="saved-list"></div>
+        </div>
+      </div>
+      <datalist id="savedCategoryList"></datalist>
     </section>
 
     <section id="view-review" class="view">

@@ -56,7 +56,13 @@ const el = {
   genCard: $('#genCard'),
   genRefreshBtn: $('#genRefreshBtn'),
   genTypeGroup: $('#genTypeGroup'),
-  genLevelGroup: $('#genLevelGroup')
+  genLevelGroup: $('#genLevelGroup'),
+  genCustomType: $('#genCustomType'),
+  savedMeta: $('#savedMeta'),
+  savedSearch: $('#savedSearch'),
+  savedCategoryBar: $('#savedCategoryBar'),
+  savedList: $('#savedList'),
+  savedCategoryList: $('#savedCategoryList')
 };
 
 const state = {
@@ -68,7 +74,10 @@ const state = {
   docName: '',
   docQuery: '',
   detailWord: '',
-  gen: { type: 'sentence', level: 'cet4', items: [], index: 0, loading: false }
+  gen: { type: 'sentence', level: 'cet4', items: [], index: 0, loading: false, saving: false, saveCategory: '' },
+  saved: [],
+  savedQuery: '',
+  savedFilter: 'all'
 };
 
 const review = {
@@ -270,22 +279,37 @@ if (window.speechSynthesis) {
 
 // 服务端 TTS 兜底音频（浏览器不提供 speechSynthesis 或原生失败时使用）
 let ttsAudioEl = null;
+let ttsFailNotified = false;
 function speakViaAudio(text) {
   const src = '/api/tts?type=2&text=' + encodeURIComponent(String(text).trim());
+  ttsFailNotified = false;
+  // 失败时回查一次接口，把服务端真实错误（如 502）展示出来，避免只看到含糊的 “not support”
+  const reportFail = (fallback) => {
+    if (ttsFailNotified) return;
+    ttsFailNotified = true;
+    fetch(src).then(async (r) => {
+      if (!r.ok) {
+        const j = await r.json().catch(() => null);
+        throw new Error(j && j.error ? j.error : ('HTTP ' + r.status));
+      }
+      throw new Error(fallback);
+    }).catch((e) => {
+      toast('朗读失败：' + (e && e.message ? e.message : fallback), 'error');
+    });
+  };
   if (!ttsAudioEl) {
     ttsAudioEl = new Audio();
-    // 兜底：部分浏览器（如平板内置浏览器）拿到非音频响应时 play() 不一定 reject，
-    // 而是在元素上触发 error，这里统一提示，避免“喇叭亮了但没声音也没提示”
+    // 兜底：部分浏览器拿到非音频响应时 play() 不一定 reject，而是在元素上触发 error
     ttsAudioEl.addEventListener('error', () => {
       const e = ttsAudioEl && ttsAudioEl.error;
-      toast('朗读播放失败：' + (e && e.message ? e.message : '请检查网络或服务'), 'error');
+      reportFail(e && e.message ? e.message : '请检查网络或服务');
     });
   }
   try { ttsAudioEl.pause(); } catch (e) { /* ignore */ }
   ttsAudioEl.src = src;
   const p = ttsAudioEl.play();
   if (p && typeof p.catch === 'function') {
-    p.catch((e) => toast('朗读播放失败：' + (e && e.message ? e.message : '请检查网络或服务'), 'error'));
+    p.catch((e) => reportFail(e && e.message ? e.message : '请检查网络或服务'));
   }
 }
 
@@ -1206,6 +1230,11 @@ function navGen(offset) {
   renderGenCard();
 }
 
+function isCurrentSaved() {
+  const item = state.gen.items[state.gen.index];
+  return !!(item && state.saved.some((s) => s.en === item.en));
+}
+
 function renderGenCard() {
   if (state.gen.loading) {
     el.genCard.innerHTML = `<div class="gen-empty"><span class="spinner"></span><p>正在生成…</p></div>`;
@@ -1216,17 +1245,29 @@ function renderGenCard() {
 
   const items = state.gen.items;
   if (!items.length) {
-    el.genCard.innerHTML = `<div class="gen-empty"><p class="empty-title">还没有内容</p><p>选择类型与难度，点击「换一批」开始生成。</p></div>`;
+    el.genCard.innerHTML = `<div class="gen-empty"><p class="empty-title">还没有内容</p><p>选择类型与难度（或自定义类型），点击「换一批」开始生成。</p></div>`;
     return;
   }
   const item = items[state.gen.index] || items[0];
   const pos = state.gen.index + 1;
+  const saved = isCurrentSaved();
+  const saveBar = state.gen.saving ? `
+    <div class="gen-save-bar">
+      <input type="text" class="gen-cat-input" list="savedCategoryList" placeholder="分类，如：商务 / 写作（留空=未分类）" value="${esc(state.gen.saveCategory)}">
+      <button type="button" class="btn primary sm" data-action="gen-save-confirm">确认保存</button>
+      <button type="button" class="btn ghost sm" data-action="gen-save-cancel">取消</button>
+    </div>` : '';
+  const saveBtn = saved
+    ? '<span class="saved-tag">已保存</span>'
+    : '<button type="button" class="btn sm" data-action="gen-save-toggle">保存</button>';
   el.genCard.innerHTML = `
     <div class="gen-index muted small">${pos} / ${items.length}</div>
     <div class="gen-en">${tokenizeWords(item.en)}<button type="button" class="icon-btn" data-action="gen-speak" title="朗读英文">🔊</button></div>
     <div class="gen-zh">${esc(item.zh || '')}</div>
+    ${saveBar}
     <div class="gen-nav">
       <button type="button" class="btn ghost sm" data-action="gen-prev">← 上一条</button>
+      ${saveBtn}
       <button type="button" class="btn primary sm" data-action="gen-refresh">换一批</button>
       <button type="button" class="btn ghost sm" data-action="gen-next">下一条 →</button>
     </div>`;
@@ -1235,12 +1276,16 @@ function renderGenCard() {
 async function generateSentences() {
   if (state.gen.loading) return;
   state.gen.loading = true;
+  state.gen.saving = false;
   renderGenCard();
   const typeLabel = state.gen.type === 'phrase' ? '短语' : '作文语句';
   const levelLabel = state.gen.level === 'cet4' ? '大学英语四级' : '大学英语六级';
+  const custom = (el.genCustomType.value || '').trim();
+  const direction = custom ? `${custom}（难度参考${levelLabel}）` : `${levelLabel}水平的${typeLabel}`;
+  const typeTag = custom || `${levelLabel === '大学英语四级' ? '四级' : '六级'}${typeLabel}`;
   const count = 5;
   const system = '你是一位资深的大学英语四六级辅导老师，擅长出适合备考的地道语料。';
-  const user = `请随机生成 ${count} 条适合${levelLabel}水平的${typeLabel}，要求：
+  const user = `请随机生成 ${count} 条${direction}，要求：
 1. 英文地道、自然，难度贴合${levelLabel}，避免过于简单或过分生僻；
 2. 每条配准确、通顺的简体中文翻译；
 3. 题材随机多变（学习、生活、科技、环境、社会、成长、文化等），彼此不重复；
@@ -1252,7 +1297,7 @@ async function generateSentences() {
     ], { json: true, temperature: 0.95, maxTokens: 2048 });
     const items = Array.isArray(data.items)
       ? data.items.filter((it) => it && String(it.en || '').trim())
-          .map((it) => ({ en: String(it.en).trim(), zh: String(it.zh || '').trim() }))
+          .map((it) => ({ en: String(it.en).trim(), zh: String(it.zh || '').trim(), type: typeTag }))
       : [];
     if (!items.length) throw new Error('生成结果为空，请重试');
     state.gen.items = items;
@@ -1262,6 +1307,102 @@ async function generateSentences() {
   } finally {
     state.gen.loading = false;
     renderGenCard();
+  }
+}
+
+function toggleGenSave() {
+  if (isCurrentSaved()) return;
+  state.gen.saving = !state.gen.saving;
+  if (state.gen.saving && !state.gen.saveCategory && state.savedFilter && state.savedFilter !== 'all') {
+    state.gen.saveCategory = state.savedFilter;
+  }
+  renderGenCard();
+  if (state.gen.saving) {
+    const input = el.genCard.querySelector('.gen-cat-input');
+    if (input) { input.focus(); input.select(); }
+  }
+}
+
+async function confirmGenSave() {
+  const item = state.gen.items[state.gen.index];
+  if (!item) return;
+  const input = el.genCard.querySelector('.gen-cat-input');
+  const category = (input ? input.value : state.gen.saveCategory).trim() || '未分类';
+  state.gen.saveCategory = category;
+  try {
+    await request('/api/sentences', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ en: item.en, zh: item.zh || '', category, type: item.type || '' })
+    });
+    state.gen.saving = false;
+    toast('已保存到佳句库');
+    await refreshSaved();
+    renderGenCard();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function refreshSaved() {
+  try {
+    state.saved = (await request('/api/sentences')) || [];
+  } catch (err) {
+    state.saved = [];
+    toast(err.message, 'error');
+  }
+  renderSaved();
+}
+
+function savedCategories() {
+  const set = new Set();
+  state.saved.forEach((s) => { if (s.category) set.add(s.category); });
+  return Array.from(set);
+}
+
+function renderSaved() {
+  const cats = savedCategories();
+  const allCount = state.saved.length;
+  const chips = [`<button type="button" class="chip ${state.savedFilter === 'all' ? 'active' : ''}" data-saved-cat="all">全部 ${allCount}</button>`];
+  cats.forEach((c) => {
+    const n = state.saved.filter((s) => s.category === c).length;
+    chips.push(`<button type="button" class="chip ${state.savedFilter === c ? 'active' : ''}" data-saved-cat="${esc(c)}">${esc(c)} ${n}</button>`);
+  });
+  el.savedCategoryBar.innerHTML = chips.join('');
+  el.savedCategoryList.innerHTML = cats.map((c) => `<option value="${esc(c)}">`).join('');
+
+  const q = state.savedQuery.trim().toLowerCase();
+  const filtered = state.saved.filter((s) => {
+    if (state.savedFilter !== 'all' && s.category !== state.savedFilter) return false;
+    if (q && !(s.en.toLowerCase().includes(q) || (s.zh || '').toLowerCase().includes(q))) return false;
+    return true;
+  });
+
+  el.savedMeta.textContent = `已保存 ${allCount} 条${filtered.length !== allCount ? `，筛选出 ${filtered.length} 条` : ''}`;
+  if (!filtered.length) {
+    el.savedList.innerHTML = `<div class="saved-empty">${allCount ? '没有匹配的佳句' : '还没有保存的佳句，生成后点「保存」即可收藏。'}</div>`;
+    return;
+  }
+  el.savedList.innerHTML = filtered.map((s) => `
+    <div class="saved-item">
+      <div class="saved-en">${tokenizeWords(s.en)}<button type="button" class="icon-btn" data-action="saved-speak" data-id="${s.id}" title="朗读">🔊</button></div>
+      <div class="saved-zh">${esc(s.zh || '')}</div>
+      <div class="saved-meta">
+        <span class="saved-cat-tag">${esc(s.category)}</span>
+        ${s.type ? `<span class="saved-type-tag muted small">${esc(s.type)}</span>` : ''}
+        <button type="button" class="icon-btn" data-action="saved-delete" data-id="${s.id}" title="删除">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+async function deleteSaved(id) {
+  try {
+    await request(`/api/sentences/${id}`, { method: 'DELETE' });
+    toast('已删除');
+    await refreshSaved();
+    renderGenCard();
+  } catch (err) {
+    toast(err.message, 'error');
   }
 }
 
@@ -1280,6 +1421,7 @@ function switchView(name) {
   if (name === 'generate') {
     if (!state.gen.items.length && !state.gen.loading) generateSentences();
     else renderGenCard();
+    refreshSaved();
   }
 }
 
@@ -1463,6 +1605,28 @@ document.addEventListener('click', (event) => {
     }
     if (name === 'gen-speak') {
       speakCurrentGen();
+      return;
+    }
+    if (name === 'gen-save-toggle') {
+      toggleGenSave();
+      return;
+    }
+    if (name === 'gen-save-cancel') {
+      state.gen.saving = false;
+      renderGenCard();
+      return;
+    }
+    if (name === 'gen-save-confirm') {
+      confirmGenSave();
+      return;
+    }
+    if (name === 'saved-speak') {
+      const s = state.saved.find((it) => it.id === Number(reviewAction.dataset.id));
+      if (s && s.en) speakWord(s.en);
+      return;
+    }
+    if (name === 'saved-delete') {
+      deleteSaved(Number(reviewAction.dataset.id));
       return;
     }
   }
@@ -1856,6 +2020,11 @@ document.addEventListener('keydown', (event) => {
       generateSentences();
       return;
     }
+    if ((event.key === 's' || event.key === 'S') && !(target && target.closest('button, a'))) {
+      event.preventDefault();
+      toggleGenSave();
+      return;
+    }
   }
 
   if ($('#view-review').classList.contains('active') && !$('#flashPane').classList.contains('hidden')) {
@@ -1955,7 +2124,41 @@ el.genLevelGroup.addEventListener('click', (event) => {
   $$('#genLevelGroup button').forEach((b) => b.classList.toggle('active', b === btn));
   generateSentences();
 });
+
+/* 佳句：自定义类型回车即生成；保存条内回车确认 / Esc 取消 */
+el.genCustomType.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    generateSentences();
+  }
+});
+el.genCard.addEventListener('keydown', (event) => {
+  const input = event.target.closest('.gen-cat-input');
+  if (!input) return;
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    confirmGenSave();
+  } else if (event.key === 'Escape') {
+    event.preventDefault();
+    state.gen.saving = false;
+    renderGenCard();
+  }
+});
+
+/* 佳句库：搜索与分类筛选 */
+el.savedSearch.addEventListener('input', () => {
+  state.savedQuery = el.savedSearch.value;
+  renderSaved();
+});
+el.savedCategoryBar.addEventListener('click', (event) => {
+  const chip = event.target.closest('[data-saved-cat]');
+  if (!chip) return;
+  state.savedFilter = chip.dataset.savedCat;
+  renderSaved();
+});
+
 renderGenCard();
+renderSaved();
 
 refreshVocab();
 

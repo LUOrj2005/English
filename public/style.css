@@ -745,6 +745,69 @@ kbd {
 .gen-zh { font-size: 17px; line-height: 1.7; color: var(--muted); }
 .gen-nav { display: flex; gap: 10px; justify-content: center; margin-top: 4px; flex-wrap: wrap; }
 .gen-hint { margin: 12px 0 0; text-align: center; }
+.chip.active { background: var(--accent-soft); border-color: var(--accent-ink); color: var(--accent-ink); font-weight: 600; }
+
+.gen-custom-input {
+  min-width: 230px;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--panel);
+  color: var(--ink);
+  font-size: 13.5px;
+  font-family: inherit;
+}
+.gen-custom-input:focus { outline: none; border-color: var(--accent-ink); }
+.gen-save-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.gen-cat-input {
+  flex: 1 1 200px;
+  min-width: 170px;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--panel);
+  color: var(--ink);
+  font-size: 14px;
+  font-family: inherit;
+}
+.gen-cat-input:focus { outline: none; border-color: var(--accent-ink); }
+
+.saved-search {
+  min-width: 220px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--panel);
+  color: var(--ink);
+  font-size: 14px;
+  font-family: inherit;
+}
+.saved-search:focus { outline: none; border-color: var(--accent-ink); }
+.saved-cats { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 16px; }
+.saved-list { display: flex; flex-direction: column; gap: 12px; }
+.saved-item {
+  padding: 16px 18px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.saved-en { font-size: 18px; font-weight: 600; color: var(--ink); line-height: 1.55; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.saved-en .icon-btn { flex: none; }
+.saved-zh { font-size: 15px; line-height: 1.7; color: var(--muted); }
+.saved-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+.saved-cat-tag {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 12px;
+  font-weight: 600;
+}
+.saved-empty { padding: 30px; text-align: center; color: var(--muted); }
 
 /* ---------- 句子朗读 ---------- */
 .en-wrap, .zr-en-wrap { display: flex; gap: 8px; align-items: flex-start; }
