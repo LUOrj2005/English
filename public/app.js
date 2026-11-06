@@ -52,7 +52,11 @@ const el = {
   popBody: $('#popBody'),
   wordDetail: $('#wordDetail'),
   toast: $('#toast'),
-  aiState: $('#aiState')
+  aiState: $('#aiState'),
+  genCard: $('#genCard'),
+  genRefreshBtn: $('#genRefreshBtn'),
+  genTypeGroup: $('#genTypeGroup'),
+  genLevelGroup: $('#genLevelGroup')
 };
 
 const state = {
@@ -63,7 +67,8 @@ const state = {
   popAnchor: null,
   docName: '',
   docQuery: '',
-  detailWord: ''
+  detailWord: '',
+  gen: { type: 'sentence', level: 'cet4', items: [], index: 0, loading: false }
 };
 
 const review = {
@@ -146,6 +151,12 @@ function chipsHTML(list) {
   }).join('');
 }
 
+function isInVocab(word) {
+  const w = String(word || '').trim().toLowerCase();
+  if (!w) return false;
+  return (state.vocab || []).some((it) => String((it && it.word) || '').trim().toLowerCase() === w);
+}
+
 function renderWordCard(container, data, opts = {}) {
   const word = data.word || opts.word || '';
   const senses = Array.isArray(data.senses) ? data.senses.filter((s) => s && (s.pos || s.meaning)) : [];
@@ -180,7 +191,9 @@ function renderWordCard(container, data, opts = {}) {
         </div>
         <div class="word-tools">
           <button class="icon-btn" data-action="speak" data-word="${esc(word)}" title="朗读">🔊</button>
-          <button class="btn primary sm" data-action="save" data-word="${esc(word)}">加入生词本</button>
+          ${isInVocab(word)
+            ? '<span class="saved-tag">已在生词本</span>'
+            : `<button class="btn primary sm" data-action="save" data-word="${esc(word)}">加入生词本</button>`}
           ${opts.popover ? '<button class="icon-btn" data-action="close-popover" title="关闭">✕</button>' : ''}
         </div>
       </header>
@@ -388,6 +401,17 @@ function updateVocabStats() {
 function statusOptions(current) {
   return ['new', 'learning', 'mastered'].map((s) =>
     `<option value="${s}" ${current === s ? 'selected' : ''}>${statusLabel(s)}</option>`).join('');
+}
+
+async function patchVocabStatus(word, status) {
+  await request(`/api/vocab/${encodeURIComponent(word)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
+  });
+  const item = state.vocab.find((it) => it.word.toLowerCase() === word.toLowerCase());
+  if (item) item.status = status;
+  updateVocabStats();
 }
 
 function renderVocab() {
@@ -1156,6 +1180,83 @@ function hidePopover() {
   state.popAnchor = null;
 }
 
+/* ---------- 佳句生成 ---------- */
+function tokenizeWords(text) {
+  return String(text || '').replace(/([A-Za-z]+(?:['’-][A-Za-z]+)*)/g,
+    (w) => `<span class="w" data-w="${esc(w)}">${esc(w)}</span>`);
+}
+
+function speakCurrentGen() {
+  const item = state.gen.items[state.gen.index];
+  if (item && item.en) speakWord(item.en);
+}
+
+function navGen(offset) {
+  const n = state.gen.items.length;
+  if (n < 1) return;
+  state.gen.index = (state.gen.index + offset + n) % n;
+  renderGenCard();
+}
+
+function renderGenCard() {
+  if (state.gen.loading) {
+    el.genCard.innerHTML = `<div class="gen-empty"><span class="spinner"></span><p>正在生成…</p></div>`;
+    if (el.genRefreshBtn) el.genRefreshBtn.disabled = true;
+    return;
+  }
+  if (el.genRefreshBtn) el.genRefreshBtn.disabled = false;
+
+  const items = state.gen.items;
+  if (!items.length) {
+    el.genCard.innerHTML = `<div class="gen-empty"><p class="empty-title">还没有内容</p><p>选择类型与难度，点击「换一批」开始生成。</p></div>`;
+    return;
+  }
+  const item = items[state.gen.index] || items[0];
+  const pos = state.gen.index + 1;
+  el.genCard.innerHTML = `
+    <div class="gen-index muted small">${pos} / ${items.length}</div>
+    <div class="gen-en">${tokenizeWords(item.en)}<button type="button" class="icon-btn" data-action="gen-speak" title="朗读英文">🔊</button></div>
+    <div class="gen-zh">${esc(item.zh || '')}</div>
+    <div class="gen-nav">
+      <button type="button" class="btn ghost sm" data-action="gen-prev">← 上一条</button>
+      <button type="button" class="btn primary sm" data-action="gen-refresh">换一批</button>
+      <button type="button" class="btn ghost sm" data-action="gen-next">下一条 →</button>
+    </div>`;
+}
+
+async function generateSentences() {
+  if (state.gen.loading) return;
+  state.gen.loading = true;
+  renderGenCard();
+  const typeLabel = state.gen.type === 'phrase' ? '短语' : '作文语句';
+  const levelLabel = state.gen.level === 'cet4' ? '大学英语四级' : '大学英语六级';
+  const count = 5;
+  const system = '你是一位资深的大学英语四六级辅导老师，擅长出适合备考的地道语料。';
+  const user = `请随机生成 ${count} 条适合${levelLabel}水平的${typeLabel}，要求：
+1. 英文地道、自然，难度贴合${levelLabel}，避免过于简单或过分生僻；
+2. 每条配准确、通顺的简体中文翻译；
+3. 题材随机多变（学习、生活、科技、环境、社会、成长、文化等），彼此不重复；
+4. 只输出 JSON，不要任何额外文字。格式：{"items":[{"en":"英文","zh":"中文"}]}`;
+  try {
+    const data = await askAI([
+      { role: 'system', content: system },
+      { role: 'user', content: user }
+    ], { json: true, temperature: 0.95, maxTokens: 2048 });
+    const items = Array.isArray(data.items)
+      ? data.items.filter((it) => it && String(it.en || '').trim())
+          .map((it) => ({ en: String(it.en).trim(), zh: String(it.zh || '').trim() }))
+      : [];
+    if (!items.length) throw new Error('生成结果为空，请重试');
+    state.gen.items = items;
+    state.gen.index = 0;
+  } catch (err) {
+    toast(err.message, 'error');
+  } finally {
+    state.gen.loading = false;
+    renderGenCard();
+  }
+}
+
 /* ---------- 视图切换 ---------- */
 function switchView(name) {
   $$('.view').forEach((view) => view.classList.toggle('active', view.id === `view-${name}`));
@@ -1168,6 +1269,10 @@ function switchView(name) {
     loadReviewQueue();
   }
   if (name === 'settings') loadStatus();
+  if (name === 'generate') {
+    if (!state.gen.items.length && !state.gen.loading) generateSentences();
+    else renderGenCard();
+  }
 }
 
 function openWordDetail(word) {
@@ -1176,6 +1281,11 @@ function openWordDetail(word) {
   if (meta) meta.textContent = `生词本 · ${word}`;
   const aiStatus = $('#wordAiStatus');
   if (aiStatus) aiStatus.textContent = '';
+  const statusSelect = $('#wordStatusSelect');
+  if (statusSelect) {
+    const item = state.vocab.find((it) => it.word.toLowerCase() === word.toLowerCase());
+    statusSelect.innerHTML = statusOptions(item ? item.status : 'new');
+  }
   switchView('word');
   const navDisabled = state.vocab.length < 2;
   const prevBtn = $('#wordPrevBtn');
@@ -1329,6 +1439,22 @@ document.addEventListener('click', (event) => {
     }
     if (name === 'dict-restart') {
       buildDictation();
+      return;
+    }
+    if (name === 'gen-refresh') {
+      generateSentences();
+      return;
+    }
+    if (name === 'gen-prev') {
+      navGen(-1);
+      return;
+    }
+    if (name === 'gen-next') {
+      navGen(1);
+      return;
+    }
+    if (name === 'gen-speak') {
+      speakCurrentGen();
       return;
     }
   }
@@ -1620,14 +1746,7 @@ el.vocabList.addEventListener('change', async (event) => {
   if (!select) return;
   const word = select.dataset.word;
   try {
-    await request(`/api/vocab/${encodeURIComponent(word)}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: select.value })
-    });
-    const item = state.vocab.find((it) => it.word.toLowerCase() === word.toLowerCase());
-    if (item) item.status = select.value;
-    updateVocabStats();
+    await patchVocabStatus(word, select.value);
     toast('状态已更新');
   } catch (err) {
     toast(err.message, 'error');
@@ -1651,6 +1770,17 @@ $('#exportBtn').addEventListener('click', exportCSV);
 $('#wordBackBtn').addEventListener('click', () => switchView('vocab'));
 $('#wordPrevBtn').addEventListener('click', () => navWordDetail(-1));
 $('#wordNextBtn').addEventListener('click', () => navWordDetail(1));
+$('#wordStatusSelect').addEventListener('change', async (event) => {
+  const word = state.detailWord;
+  if (!word) return;
+  const select = event.currentTarget;
+  try {
+    await patchVocabStatus(word, select.value);
+    toast('状态已更新');
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+});
 document.addEventListener('keydown', (event) => {
   const target = event.target;
   const tag = target && target.tagName;
@@ -1693,6 +1823,29 @@ document.addEventListener('keydown', (event) => {
     if (event.key === ' ' && !(target && target.closest('button, a'))) {
       event.preventDefault();
       speakWord(state.detailWord);
+      return;
+    }
+  }
+
+  if ($('#view-generate').classList.contains('active')) {
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      navGen(-1);
+      return;
+    }
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      navGen(1);
+      return;
+    }
+    if (event.key === ' ' && !(target && target.closest('button, a'))) {
+      event.preventDefault();
+      speakCurrentGen();
+      return;
+    }
+    if (event.key === 'Enter' && !(target && target.closest('button, a'))) {
+      event.preventDefault();
+      generateSentences();
       return;
     }
   }
@@ -1778,6 +1931,24 @@ $('#testBtn').addEventListener('click', async () => {
 /* ---------- 初始化 ---------- */
 if (location.hash === '#doc') switchView('doc');
 loadStatus();
+
+/* 佳句生成：切换类型或难度即重新生成一批 */
+el.genTypeGroup.addEventListener('click', (event) => {
+  const btn = event.target.closest('button[data-gen-type]');
+  if (!btn) return;
+  state.gen.type = btn.dataset.genType;
+  $$('#genTypeGroup button').forEach((b) => b.classList.toggle('active', b === btn));
+  generateSentences();
+});
+el.genLevelGroup.addEventListener('click', (event) => {
+  const btn = event.target.closest('button[data-gen-level]');
+  if (!btn) return;
+  state.gen.level = btn.dataset.genLevel;
+  $$('#genLevelGroup button').forEach((b) => b.classList.toggle('active', b === btn));
+  generateSentences();
+});
+renderGenCard();
+
 refreshVocab();
 
 if ('serviceWorker' in navigator) {

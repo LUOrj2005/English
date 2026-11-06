@@ -89,6 +89,7 @@
     <nav class="tabs">
       <button class="tab active" data-view="dict">词典</button>
       <button class="tab" data-view="doc">文档对照</button>
+      <button class="tab" data-view="generate">佳句</button>
       <button class="tab" data-view="review">复习<span class="count" id="dueCount">0</span></button>
       <button class="tab" data-view="vocab">生词本<span class="count" id="vocabCount">0</span></button>
       <button class="tab" data-view="settings">设置</button>
@@ -169,6 +170,33 @@
       </div>
     </section>
 
+    <section id="view-generate" class="view">
+      <div class="container">
+        <div class="panel panel-deco">
+          <img class="panel-mascot pm4" src="images/Image_1790854221407_922.jpg" alt="">
+          <div class="panel-head row-head">
+            <div>
+              <h2>佳句生成</h2>
+              <p class="muted">AI 随机生成四六级短语或作文语句，中英双语对照；点击英文单词可查释义，可朗读。</p>
+            </div>
+            <div class="gen-controls">
+              <div class="segmented" id="genTypeGroup" role="group" aria-label="内容类型">
+                <button type="button" data-gen-type="phrase">短语</button>
+                <button type="button" class="active" data-gen-type="sentence">作文语句</button>
+              </div>
+              <div class="segmented" id="genLevelGroup" role="group" aria-label="难度">
+                <button type="button" class="active" data-gen-level="cet4">四级</button>
+                <button type="button" data-gen-level="cet6">六级</button>
+              </div>
+              <button type="button" id="genRefreshBtn" class="btn primary" data-action="gen-refresh">换一批</button>
+            </div>
+          </div>
+          <div id="genCard" class="gen-card"></div>
+          <p class="muted small gen-hint">键盘：<kbd>←</kbd>/<kbd>→</kbd> 切换 · <kbd>空格</kbd> 朗读 · <kbd>Enter</kbd> 换一批</p>
+        </div>
+      </div>
+    </section>
+
     <section id="view-review" class="view">
       <div class="container">
         <div class="panel panel-deco">
@@ -233,6 +261,10 @@
             <div>
               <h2>生词详情</h2>
               <p class="muted" id="wordDetailMeta">从生词本打开，不跳转词典</p>
+              <div class="detail-status">
+                <span class="detail-status-label">状态</span>
+                <select id="wordStatusSelect" class="status-select" aria-label="选择生词状态"></select>
+              </div>
             </div>
             <div class="detail-nav">
               <button type="button" id="wordPrevBtn" class="btn ghost sm" title="上一个生词">← 上一个</button>

@@ -149,6 +149,7 @@ body::before {
 .pm1 { /* 生词本：右下 */ bottom: -18px; right: -18px; width: 86px; height: 86px; transform: rotate(6deg); }
 .pm2 { /* 文档：左下 */ bottom: -16px; left: -16px;  width: 78px; height: 78px; transform: rotate(-8deg); }
 .pm3 { /* 复习：右中 */ top: 30%;    right: -14px; width: 72px; height: 72px; transform: rotate(12deg); }
+.pm4 { /* 佳句：左上 */ top: -14px; left: -14px; width: 74px; height: 74px; transform: rotate(-7deg); }
 
 /* panel::after 左下角小草叶（现有 ::before 是右上角小花） */
 .panel::after {
@@ -412,7 +413,18 @@ kbd {
 .word-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
 .word-title h2 { margin: 0; font-size: 30px; letter-spacing: -.01em; line-height: 1.2; }
 .word-title .phonetic { color: var(--muted); font-size: 14px; }
-.word-tools { display: flex; gap: 8px; flex-shrink: 0; }
+.word-tools { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
+.saved-tag {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 4px 10px;
+  white-space: nowrap;
+  cursor: default;
+}
 
 .senses { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
 .sense { display: flex; gap: 10px; align-items: baseline; }
@@ -709,6 +721,30 @@ kbd {
 
 /* ---------- 生词详情导航 ---------- */
 .detail-nav { display: flex; gap: 8px; flex-wrap: wrap; }
+.detail-status { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.detail-status-label { font-size: 12.5px; color: var(--muted); }
+
+/* ---------- 佳句生成 ---------- */
+.gen-controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: flex-end; }
+.gen-card {
+  margin-top: 18px;
+  padding: 28px 26px;
+  min-height: 220px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.gen-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; flex: 1; color: var(--muted); text-align: center; min-height: 180px; }
+.gen-empty .empty-title { font-size: 17px; font-weight: 600; color: var(--ink); }
+.gen-index { align-self: flex-end; }
+.gen-en { font-size: 24px; line-height: 1.55; font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.gen-en .icon-btn { flex: none; }
+.gen-zh { font-size: 17px; line-height: 1.7; color: var(--muted); }
+.gen-nav { display: flex; gap: 10px; justify-content: center; margin-top: 4px; flex-wrap: wrap; }
+.gen-hint { margin: 12px 0 0; text-align: center; }
 
 /* ---------- 句子朗读 ---------- */
 .en-wrap, .zr-en-wrap { display: flex; gap: 8px; align-items: flex-start; }

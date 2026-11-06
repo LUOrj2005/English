@@ -250,7 +250,9 @@ function renderWordCard(container, data, opts = {}) {
         </div>
         <div class="word-tools">
           <button class="icon-btn" data-action="speak" data-word="${esc(word)}" title="朗读">🔊</button>
-          <button class="btn primary sm" data-action="save" data-word="${esc(word)}">加入生词本</button>
+          ${state.vocabSet.has(String(word || '').trim().toLowerCase())
+            ? '<span class="saved-tag">已在生词本</span>'
+            : `<button class="btn primary sm" data-action="save" data-word="${esc(word)}">加入生词本</button>`}
           <button class="icon-btn" data-action="close-popover" title="关闭">✕</button>
         </div>
       </header>
