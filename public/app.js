@@ -152,7 +152,9 @@ function renderWordCard(container, data, opts = {}) {
   const derivatives = Array.isArray(data.derivatives) ? data.derivatives.filter((d) => d && d.word) : [];
   const synonyms = Array.isArray(data.synonyms) ? data.synonyms.filter((d) => d && d.word) : [];
   const antonyms = Array.isArray(data.antonyms) ? data.antonyms.filter((d) => d && d.word) : [];
-  const examples = Array.isArray(data.examples) ? data.examples.filter((e) => e && e.en) : [];
+  const examples = (Array.isArray(data.examples) ? data.examples : [])
+    .map((e) => (typeof e === 'string' ? { en: e, zh: '' } : e))
+    .filter((e) => e && e.en);
   const collocations = Array.isArray(data.collocations) ? data.collocations.filter((c) => c && c.phrase) : [];
 
   const sections = [
@@ -162,7 +164,7 @@ function renderWordCard(container, data, opts = {}) {
     antonyms.length ? `<section class="sec"><h3>反义词</h3><div class="chips">${chipsHTML(antonyms)}</div></section>` : '',
     examples.length ? `<section class="sec"><h3>例句</h3>${examples.map((ex) => `
       <div class="example">
-        <p class="ex-en">${esc(ex.en)}</p>
+        <div class="ex-head"><p class="ex-en">${esc(ex.en)}</p><button class="icon-btn" data-action="speak" data-word="${esc(ex.en)}" title="朗读例句">🔊</button></div>
         ${ex.zh ? `<p class="ex-zh">${esc(ex.zh)}</p>` : ''}
       </div>`).join('')}</section>` : '',
     collocations.length ? `<section class="sec"><h3>常见搭配</h3><div class="colloc-list">${collocations.map((c) => `
@@ -282,11 +284,14 @@ function speakWord(word) {
   let failed = false;
   const build = () => {
     const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = 'en-US';
+    const zh = /[\u4e00-\u9fa5]/.test(text);
+    utter.lang = zh ? 'zh-CN' : 'en-US';
     utter.rate = 0.9;
-    const voice = ttsVoice || pickEnglishVoice();
-    if (voice && /^en/i.test(String(voice.lang || ''))) {
-      try { utter.voice = voice; } catch (e) { /* ignore */ }
+    if (!zh) {
+      const voice = ttsVoice || pickEnglishVoice();
+      if (voice && /^en/i.test(String(voice.lang || ''))) {
+        try { utter.voice = voice; } catch (e) { /* ignore */ }
+      }
     }
     return utter;
   };
@@ -550,7 +555,7 @@ function renderEnglish(text) {
 function renderRow(seg, direction = 'en2zh') {
   if (direction === 'zh2en') {
     return `<div class="row">
-      <div class="col zh">${esc(seg.src)}</div>
+      <div class="col zh"><span class="zh-text">${esc(seg.src)}</span><button class="icon-btn sent-speak" data-action="speak" data-word="${esc(seg.src)}" title="朗读译文">🔊</button></div>
       <div class="col en"><div class="en-wrap">
         <div class="en-text">${renderEnglish(seg.out || '…')}</div>
         <button class="icon-btn sent-speak" data-action="speak" data-word="${esc(seg.out || '')}" title="朗读整句">🔊</button>
@@ -562,7 +567,7 @@ function renderRow(seg, direction = 'en2zh') {
       <div class="en-text">${renderEnglish(seg.src)}</div>
       <button class="icon-btn sent-speak" data-action="speak" data-word="${esc(seg.src)}" title="朗读整句">🔊</button>
     </div></div>
-    <div class="col zh">${esc(seg.out || '…')}</div>
+    <div class="col zh"><span class="zh-text">${esc(seg.out || '…')}</span><button class="icon-btn sent-speak" data-action="speak" data-word="${esc(seg.out || '')}" title="朗读译文">🔊</button></div>
   </div>`;
 }
 

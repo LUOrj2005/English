@@ -293,12 +293,17 @@ function getLocalDictCard(word) {
   };
 }
 
-// 通用元素去重键：字符串直接用；对象取 word/term/text/meaning
+// 通用元素去重键：字符串直接用；对象优先取 word/term/text/meaning，
+// 兜底取 en/phrase（例句/搭配），最后取对象首个非空字符串值，避免取不到键被误删
 function cardItemKey(item) {
   if (item == null) return '';
   if (typeof item === 'object') {
-    return String(item.word || item.term || item.text || item.meaning || '')
-      .trim().toLowerCase();
+    const v = item.word || item.term || item.text || item.meaning || item.en || item.phrase;
+    if (v) return String(v).trim().toLowerCase();
+    for (const val of Object.values(item)) {
+      if (typeof val === 'string' && val.trim()) return val.trim().toLowerCase();
+    }
+    return '';
   }
   return String(item).trim().toLowerCase();
 }
@@ -1196,8 +1201,11 @@ async function handleTTS(req, res, url) {
   const text = String(url.searchParams.get('text') || '').trim();
   if (!text) return sendJSON(res, 400, { error: 'text 不能为空' });
   if (text.length > 300) return sendJSON(res, 400, { error: 'text 过长' });
+  // 含中文字符 → 中文发音（le=zh），否则英语发音（type=2 美式 / type=1 英式）
+  const isZh = /[\u4e00-\u9fa5]/.test(text);
+  const lang = isZh ? 'zh' : 'en';
   const type = url.searchParams.get('type') === '1' ? '1' : '2';
-  const cacheKey = type + '|' + text.toLowerCase();
+  const cacheKey = lang + '|' + text.toLowerCase();
 
   const cached = ttsCache.get(cacheKey);
   if (cached) {
@@ -1206,8 +1214,9 @@ async function handleTTS(req, res, url) {
   }
 
   try {
-    const target = 'https://dict.youdao.com/dictvoice?audio=' +
-      encodeURIComponent(text) + '&type=' + type;
+    const target = isZh
+      ? 'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(text) + '&le=zh'
+      : 'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(text) + '&type=' + type;
     const r = await fetch(target, {
       headers: { 'User-Agent': 'Mozilla/5.0 WordLens' },
       signal: AbortSignal.timeout(15000)

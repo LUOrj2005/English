@@ -103,11 +103,14 @@ function speakWord(word) {
   let failed = false;
   const build = () => {
     const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = 'en-US';
+    const zh = /[\u4e00-\u9fa5]/.test(text);
+    utter.lang = zh ? 'zh-CN' : 'en-US';
     utter.rate = 0.9;
-    const voice = ttsVoice || pickEnglishVoice();
-    if (voice && /^en/i.test(String(voice.lang || ''))) {
-      try { utter.voice = voice; } catch (e) { /* ignore */ }
+    if (!zh) {
+      const voice = ttsVoice || pickEnglishVoice();
+      if (voice && /^en/i.test(String(voice.lang || ''))) {
+        try { utter.voice = voice; } catch (e) { /* ignore */ }
+      }
     }
     return utter;
   };
@@ -164,7 +167,7 @@ function renderRow(seg, direction) {
   const zh = direction === 'zh2en' ? seg.src : seg.out;
   const en = direction === 'zh2en' ? seg.out : seg.src;
   return `<div class="zr-row">
-    <div class="zr-zh">${esc(zh || '…')}</div>
+    <div class="zr-zh"><span class="zr-zh-text">${esc(zh || '…')}</span><button class="icon-btn sent-speak" data-action="speak" data-word="${esc(zh || '')}" title="朗读译文">🔊</button></div>
     <div class="zr-en-wrap">
       <div class="zr-en">${renderEnglish(en || '…')}</div>
       <button class="icon-btn sent-speak" data-action="speak" data-word="${esc(en || '')}" title="朗读整句">🔊</button>
