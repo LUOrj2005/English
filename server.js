@@ -289,22 +289,57 @@ function getLocalDictCard(word) {
   };
 }
 
+// 通用元素去重键：字符串直接用；对象取 word/term/text/meaning
+function cardItemKey(item) {
+  if (item == null) return '';
+  if (typeof item === 'object') {
+    return String(item.word || item.term || item.text || item.meaning || '')
+      .trim().toLowerCase();
+  }
+  return String(item).trim().toLowerCase();
+}
+
+// 释义去重键：去掉词性前缀（n./v. 等），使 "n. 苹果" 与 "苹果" 视为同一条
+function senseKey(s) {
+  let text;
+  if (s == null) return '';
+  if (typeof s === 'object') text = s.meaning || s.pos || '';
+  else text = String(s);
+  return String(text).trim().toLowerCase().replace(/^[a-z]{1,5}\.\s*/, '');
+}
+
+// local 在前（保留导入释义顺序），cached 在后追加，按键去重
+function mergeUnique(localArr, cachedArr, keyFn) {
+  const out = [];
+  const seen = new Set();
+  const push = (arr) => {
+    if (!Array.isArray(arr)) return;
+    for (const it of arr) {
+      const k = keyFn(it);
+      if (!k || seen.has(k)) continue;
+      seen.add(k);
+      out.push(it);
+    }
+  };
+  push(localArr);
+  push(cachedArr);
+  return out;
+}
+
 function mergeLocalCard(local, cached) {
   if (!cached) return local;
-  const pickArray = (key) => (Array.isArray(local[key]) && local[key].length
-    ? local[key]
-    : (Array.isArray(cached[key]) ? cached[key] : []));
   return {
     ...cached,
     ...local,
     phonetic: local.phonetic || cached.phonetic || '',
-    senses: local.senses.length ? local.senses : (Array.isArray(cached.senses) ? cached.senses : []),
     root: local.root || cached.root || '',
-    derivatives: pickArray('derivatives'),
-    synonyms: pickArray('synonyms'),
-    antonyms: pickArray('antonyms'),
-    examples: pickArray('examples'),
-    collocations: pickArray('collocations')
+    // 导入释义与 AI 新增释义并存去重，不再二选一覆盖
+    senses: mergeUnique(local.senses, cached.senses, senseKey),
+    derivatives: mergeUnique(local.derivatives, cached.derivatives, cardItemKey),
+    synonyms: mergeUnique(local.synonyms, cached.synonyms, cardItemKey),
+    antonyms: mergeUnique(local.antonyms, cached.antonyms, cardItemKey),
+    examples: mergeUnique(local.examples, cached.examples, cardItemKey),
+    collocations: mergeUnique(local.collocations, cached.collocations, cardItemKey)
   };
 }
 
@@ -930,8 +965,12 @@ async function handleDict(req, res) {
     const card = parseLooseJSON(content);
     if (!card || typeof card !== 'object') throw new Error('AI 返回格式异常');
     if (!card.word) card.word = word;
-    saveCachedCard(word, card);
-    return sendJSON(res, 200, { source: 'ai', card });
+    // 与本地导入词典合并后再保存/返回：保留导入释义，同时持久化 AI 新增内容，
+    // 避免 AI 覆盖导入释义，也避免重新点击单词时 AI 新增释义丢失
+    const local = getLocalDictCard(word);
+    const merged = local ? mergeLocalCard(local, card) : card;
+    saveCachedCard(word, merged);
+    return sendJSON(res, 200, { source: 'ai', card: merged });
   } catch (err) {
     return sendJSON(res, err.status || 502, { error: err.message });
   }

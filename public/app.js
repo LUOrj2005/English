@@ -257,13 +257,31 @@ function speakWord(word) {
   if (!word || !window.speechSynthesis) return;
   const text = String(word).trim();
   if (!text) return;
-  speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = 'en-US';
-  utter.rate = 0.9;
-  const voice = ttsVoice || pickEnglishVoice();
-  if (voice) utter.voice = voice;
-  speechSynthesis.speak(utter);
+
+  const build = () => {
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'en-US';
+    utter.rate = 0.9;
+    const voice = ttsVoice || pickEnglishVoice();
+    // 部分平板/浏览器不接受指定 voice，赋值会静默失败，加守卫与 try/catch
+    if (voice && /^en/i.test(String(voice.lang || ''))) {
+      try { utter.voice = voice; } catch (e) { /* ignore */ }
+    }
+    return utter;
+  };
+
+  const fire = () => {
+    try { speechSynthesis.resume(); } catch (e) { /* ignore */ }
+    speechSynthesis.speak(build());
+  };
+
+  // 修复 Android Chrome cancel→speak 竞态：正在发音时先取消，下一 tick 再朗读新内容
+  if (speechSynthesis.speaking || speechSynthesis.pending) {
+    speechSynthesis.cancel();
+    setTimeout(fire, 0);
+  } else {
+    fire();
+  }
 }
 
 /* ---------- 生词本 ---------- */

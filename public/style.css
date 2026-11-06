@@ -20,6 +20,12 @@
   --topbar: rgba(255, 255, 255, .92);
   --danger-line: #fecaca;
   --danger-bg: #fef2f2;
+  /* 水墨背景单一强度控制点：笔触/墨点/晕染/纸纹均由此派生
+     预设档位：0.25(极淡) / 0.35(淡雅) / 0.42(默认·明显) / 0.55(浓墨) */
+  --ink-opacity: 0.42;
+  /* images 滤镜单一入口：调这一处即可整体改变所有 Q 版图的饱和度/亮度
+     saturate: .9≈原色 .6=柔和 .4=灰度；brightness: 1.0=原色 1.05=偏亮发白 0.95=压暗 */
+  --mascot-filter: saturate(.9) brightness(1.0);
 }
 
 * { box-sizing: border-box; }
@@ -27,25 +33,45 @@
 html, body { margin: 0; padding: 0; }
 
 body {
-  /* 浅蓝色渐变 + 更明显的手绘虚线纹理 */
+  /* 浅蓝宣纸底 + 极淡墨晕染（3 层 radial-gradient 固定，不随滚动移动）
+     明显的水墨笔触/墨点/纸纹在 body::before，由 --ink-opacity 统一控制 */
   background:
-    /* 前三层 radial-gradient 用 fixed，保证渐变层不随滚动移动 */
-    radial-gradient(ellipse at 0% 0%, rgba(59, 130, 246, .14), transparent 55%),
-    radial-gradient(ellipse at 100% 100%, rgba(99, 102, 241, .12), transparent 50%),
-    radial-gradient(circle at 50% 30%, rgba(147, 197, 253, .08), transparent 60%),
-    /* 最底层 SVG 虚线纹理用 scroll，与固定渐变层形成轻微视差（背景第 4 层） */
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'><path d='M0 20 L80 20' stroke='%23c7d2fe' stroke-width='1' stroke-dasharray='4 5' opacity='0.85'/><path d='M0 50 L80 50' stroke='%23bfdbfe' stroke-width='0.8' stroke-dasharray='3 7' opacity='0.7'/></svg>"),
-    #eef2ff;  /* 浅蓝色底色 */
-  /* 视差：渐变 fixed，纹理 scroll。浏览器会对所有层应用同一个 attachment，
-     所以用 background-attachment 分别设：渐变 fixed，SVG scroll ——
-     但单一 background-attachment 作用于所有层，因此拆成两次 background 声明来分离。 */
-  background-attachment: fixed, fixed, fixed, scroll;
+    radial-gradient(ellipse at 0% 0%, rgba(59, 130, 246, .12), transparent 55%),
+    radial-gradient(ellipse at 100% 100%, rgba(99, 102, 241, .10), transparent 50%),
+    radial-gradient(circle at 50% 30%, rgba(147, 197, 253, .07), transparent 60%),
+    #f0f6ff;  /* 更通透的浅蓝宣纸底色 */
+  background-attachment: fixed;
   position: relative;
   min-height: 100vh;
   color: var(--ink);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 15px;
   line-height: 1.6;
+}
+
+/* ---------- 水墨背景层（中国传统水墨风格） ----------
+   四层叠加，整体不透明度由 --ink-opacity 控制，mix-blend-mode multiply 产生墨透纸感：
+   1) 墨晕染：径向墨团   2) 笔触：扫笔贝塞尔曲线
+   3) 墨点/飞白：散落圆点  4) 纸纹颗粒：feTurbulence 噪声                     */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: var(--ink-opacity);
+  mix-blend-mode: multiply;
+  background:
+    /* ① 墨晕染（蓝灰墨：左上/右下两大墨团 + 中央淡墨） */
+    radial-gradient(ellipse 60% 50% at 12% 18%, rgba(30, 58, 138, .42), transparent 70%),
+    radial-gradient(ellipse 55% 45% at 88% 82%, rgba(30, 64, 175, .38), transparent 72%),
+    radial-gradient(ellipse 40% 35% at 50% 50%, rgba(37, 99, 235, .18), transparent 70%),
+    /* ② 笔触：扫笔曲线（左上→右下、右上→左下各一道） */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='1200' viewBox='0 0 1000 1000' preserveAspectRatio='xMidYMid slice'><g fill='none' stroke='%231e3a8a' stroke-linecap='round'><path d='M-50 220 Q260 120 520 300 T1060 260' stroke-width='18' opacity='.55'/><path d='M-50 250 Q260 150 520 330 T1060 290' stroke-width='6' opacity='.35'/><path d='M1060 740 Q760 840 500 680 T-60 720' stroke-width='22' opacity='.45'/><path d='M1060 770 Q760 870 500 710 T-60 750' stroke-width='7' opacity='.3'/><path d='M-40 520 Q300 470 620 560 T1080 500' stroke-width='4' opacity='.25' stroke-dasharray='2 14'/></g></svg>") center/cover no-repeat,
+    /* ③ 墨点/飞白：散落圆点 */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'><g fill='%231e3a8a'><circle cx='80' cy='150' r='9' opacity='.5'/><circle cx='120' cy='135' r='4' opacity='.35'/><circle cx='95' cy='175' r='3' opacity='.3'/><circle cx='470' cy='90' r='12' opacity='.45'/><circle cx='510' cy='115' r='5' opacity='.3'/><circle cx='450' cy='130' r='3' opacity='.25'/><circle cx='540' cy='480' r='14' opacity='.48'/><circle cx='575' cy='510' r='6' opacity='.32'/><circle cx='40' cy='520' r='11' opacity='.42'/><circle cx='15' cy='555' r='5' opacity='.28'/><circle cx='260' cy='30' r='3' opacity='.3'/><circle cx='330' cy='15' r='2' opacity='.25'/><circle cx='560' cy='250' r='4' opacity='.28'/><circle cx='30' cy='340' r='3' opacity='.25'/><circle cx='580' cy='380' r='5' opacity='.3'/><circle cx='200' cy='590' r='4' opacity='.28'/><circle cx='420' cy='585' r='3' opacity='.24'/></g></svg>"),
+    /* ④ 纸纹颗粒：单张 cover 只渲染一次（避免平铺时多实例 feTurbulence 卡顿） */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='800' viewBox='0 0 800 800' preserveAspectRatio='xMidYMid slice'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='.16'/></svg>") center/cover no-repeat;
 }
 
 /* ---------- 背景装饰层 ---------- */
@@ -60,16 +86,16 @@ body {
 /* Q 版小鱼人：降透明度，让新的小图标主导（大背景只做极淡氛围） */
 .deco-img {
   position: absolute;
-  opacity: .05;
-  filter: saturate(.4) brightness(1.06);
+  opacity: .13;
+  filter: var(--mascot-filter);
   object-fit: contain;
   max-width: 42vw;
   max-height: 40vh;
 }
 .d1 { top: 80px;  left: 20px;    width: 200px; height: 200px; }
-.d2 { bottom: 40px; right: 20px; width: 240px; height: 240px; opacity: .045; }
-.d3 { bottom: 60px; left: 20px;  width: 180px; height: 180px; opacity: .04; }
-.d4 { top: 120px;  right: 40px; width: 160px; height: 160px; opacity: .035; }
+.d2 { bottom: 40px; right: 20px; width: 240px; height: 240px; opacity: .11; }
+.d3 { bottom: 60px; left: 20px;  width: 180px; height: 180px; opacity: .10; }
+.d4 { top: 120px;  right: 40px; width: 160px; height: 160px; opacity: .09; }
 
 /* 手绘小花簇：提高透明度，让装饰更饱满 */
 .deco-flower {
@@ -117,8 +143,8 @@ body {
   border-radius: 10px;
   border: 1px solid rgba(165, 180, 252, .35);
   background: #ffffff;
-  filter: saturate(.5) brightness(1.05);
-  opacity: .82;
+  filter: var(--mascot-filter);
+  opacity: .92;
 }
 .pm1 { /* 生词本：右下 */ bottom: -18px; right: -18px; width: 86px; height: 86px; transform: rotate(6deg); }
 .pm2 { /* 文档：左下 */ bottom: -16px; left: -16px;  width: 78px; height: 78px; transform: rotate(-8deg); }
@@ -165,8 +191,8 @@ body {
   object-fit: cover;
   flex: none;
   margin: 0 2px;
-  opacity: .9;
-  filter: saturate(.55) brightness(1.05);
+  opacity: .95;
+  filter: var(--mascot-filter);
   border: 1px solid rgba(165, 180, 252, .4);
   background: #ffffff;
 }
@@ -987,7 +1013,7 @@ body.hide-zh .zr-zh { display: none; }
 @media (max-width: 600px) {
   /* 手机屏幕窄，隐藏装饰避免拥挤 */
   .bg-deco { display: none; }
-  body { background: var(--bg); }
+  body { background: var(--bg); --ink-opacity: 0.30; }  /* 手机：水墨层稍淡，不喧宾夺主 */
   /* 新增装饰在手机上也隐藏 */
   .brand-mascot { display: none; }
   .panel-mascot { display: none; }
@@ -1059,6 +1085,7 @@ body.hide-zh .zr-zh { display: none; }
     --danger-line: #7f1d1d;
     --danger-bg: #3b1219;
     --shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 8px 24px rgba(0, 0, 0, .35);
+    --ink-opacity: 0.22;  /* 暗色：水墨改为浅墨 + screen 混合，降低强度 */
   }
   .toast { background: var(--panel-2); color: var(--ink); border: 1px solid var(--line); }
   .btn.primary:hover { background: #2563eb; }
@@ -1070,21 +1097,25 @@ body.hide-zh .zr-zh { display: none; }
     box-shadow: 0 0 0 3px rgba(96, 165, 250, .2);
   }
   .doc-search:focus { outline-color: #1e3a8a; }
-  /* 暗色模式：靛蓝墨纸 + 靛蓝系纹理 + 装饰降透明度 */
+  /* 暗色模式：深靛蓝墨纸底 + 浅墨晕染；水墨层用 invert+screen 翻转为浅墨 */
   body {
     background:
       radial-gradient(ellipse at 0% 0%, rgba(99, 102, 241, .18), transparent 55%),
       radial-gradient(ellipse at 100% 100%, rgba(129, 140, 248, .14), transparent 50%),
       radial-gradient(circle at 50% 50%, rgba(165, 180, 252, .07), transparent 70%),
-      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'><path d='M0 20 L80 20' stroke='%233730a3' stroke-width='1' stroke-dasharray='4 5' opacity='0.55'/><path d='M0 50 L80 50' stroke='%234338ca' stroke-width='0.8' stroke-dasharray='3 7' opacity='0.45'/></svg>"),
       var(--bg);
-    background-attachment: fixed, fixed, fixed, scroll;
+    background-attachment: fixed;
   }
-  .deco-img { opacity: .10 !important; filter: brightness(.55) saturate(.5); }
+  body::before {
+    /* 翻转黑墨为浅墨，screen 混合在深底上形成淡墨晕染 */
+    mix-blend-mode: screen;
+    filter: invert(1) hue-rotate(180deg) contrast(.92);  /* invert+hue-rotate 保持蓝色相，暗色仍为浅蓝墨 */
+  }
+  .deco-img { opacity: .16 !important; filter: var(--mascot-filter) brightness(.85); }
   .deco-flower { opacity: .25 !important; }
   /* 暗色：顶栏迷你 Q 版更暗、border 换靛蓝 */
-  .brand-mascot { filter: brightness(.5) saturate(.4); border-color: rgba(129, 140, 248, .45); }
-  .panel-mascot { filter: brightness(.5) saturate(.4); border-color: rgba(129, 140, 248, .45); background: #111c2e; }
+  .brand-mascot { filter: var(--mascot-filter) brightness(.9); border-color: rgba(129, 140, 248, .45); }
+  .panel-mascot { filter: var(--mascot-filter) brightness(.9); border-color: rgba(129, 140, 248, .45); background: #111c2e; }
   /* 暗色：顶栏波浪线、container 小草叶降透明度 */
   .topbar::before { opacity: .18; }
   .container::before { opacity: .22; }
