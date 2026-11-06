@@ -22,7 +22,8 @@
 
 ## 技术架构
 
-- 后端：Node.js 原生 `http` 模块（无 Web 框架），`node:sqlite` 内置数据库，`mammoth` 解析 `.docx`，`anki-apkg-export` 生成 `.apkg`。
+- 后端：Node.js 原生 `http` 模块（无 Web 框架），`node:sqlite` 内置数据库，`mammoth` 解析 `.docx`，`anki-apkg-export` 生成 `.apkg`。**朗读等核心功能零 npm 依赖**，clone 后直接可跑。
+- 朗读：浏览器原生 `speechSynthesis` → 失败时降级服务端 `/api/tts`（单词走有道 dictvoice，句子走微软 Edge 在线 TTS，两者自动互切）。Edge TTS 是 `lib/edge-tts.js` 里的纯 Node 实现（Node 22 内置 WebSocket + Sec-MS-GEC 签名），不需要 `msedge-tts` / `ws`；若装了 `ws` 会自动优先使用。
 - 前端：纯 HTML / CSS / JS，无构建步骤；PWA 使用 manifest + Service Worker（网络优先、离线回退缓存）。
 - AI：OpenAI 兼容协议，默认 DeepSeek（`https://api.deepseek.com`，模型 `deepseek-chat`）。
 - API Key 只保存在服务端 `config.json`，不会下发到浏览器。
@@ -35,6 +36,8 @@ D:\traecn
 ├── config.json          # API Key / Base URL / 模型 / 端口
 ├── package.json
 ├── README.md
+├── lib/
+│   └── edge-tts.js       # 零依赖 Edge 在线 TTS（WebSocket 握手、GEC 签名、音频帧解析）
 ├── public/
 │   ├── index.html       # 页面结构
 │   ├── reader.html      # 对照阅读页（中文在上、英文在下）
@@ -53,18 +56,33 @@ D:\traecn
 
 ### 环境要求
 
-- Node.js **>= 22.5**（使用内置 `node:sqlite`；启动时的 ExperimentalWarning 可忽略）
-- 可访问 DeepSeek 接口的网络
+- Node.js **>= 22.5**（使用内置 `node:sqlite` 与内置 WebSocket；启动时的 ExperimentalWarning 可忽略）
+- 可访问 DeepSeek 接口的网络；句子朗读还需要能访问 `dict.youdao.com` 或 `speech.platform.bing.com`
+- 设备时间要准确（Edge TTS 的 Sec-MS-GEC 签名按时间生成，偏差过大会 403；程序会自动按服务器时间校正重试一次）
 
 ### 安装与启动
 
+核心功能（查词、翻译、生词本、复习、朗读）**不需要 `npm install`**，因为 `node_modules/` 不会随仓库克隆，服务端的朗读已改为纯 Node 内置实现。
+
 ```powershell
 cd D:\traecn
-npm install
-npm start
+node server.js
 ```
 
-浏览器打开 <http://127.0.0.1:3000>。
+在 Android 平板 / Termux 上：
+
+```bash
+pkg install nodejs git     # 用 node -v 确认 >= 22.5
+git clone <你的仓库地址> English
+cd English
+node server.js             # 或 npm start
+```
+
+浏览器打开 <http://127.0.0.1:3000>。只有用到「上传 .docx」和「导出 Anki 牌组」时，才需要额外安装可选依赖：
+
+```bash
+npm install --ignore-scripts
+```
 
 若 3000 端口被占用，服务会自动尝试 3001、3002……，以控制台输出的地址为准。
 
@@ -135,6 +153,13 @@ npm start
 
 - 随机抽最多 10 个生词，自动播放发音，可点扬声器重复播放。
 - 输入答案后回车或点「提交」，核对音标与释义；答完可「再来一轮」。
+
+### 朗读（单词 / 例句 / 整句）
+
+- 优先用浏览器自带 `speechSynthesis`（离线可用）；Android 上长句没有英语语音包或原生 TTS 超时时，自动降级到服务端 `/api/tts`。
+- 服务端策略：单词优先有道 dictvoice（快、可缓存）；句子（含空格或较长中文）优先微软 Edge 在线 TTS（支持任意中英文长句）；任一渠道失败自动切换另一个。
+- 音频按「语言 + 文本」缓存（最多 500 条），重复朗读不再请求上游。
+- 服务端 TTS 需要联网；两边都不可用时会显示具体失败原因，而不是笼统的「朗读失败」。
 
 ### 生词本
 
@@ -256,6 +281,7 @@ npm start
 | POST | `/api/dictionary/import` | 上传词典文本（body 为原始文本），可带 `?name=`，返回导入/跳过/总数 |
 | GET | `/api/dictionary` | 自定义词典概览：`{ count, sample }` |
 | DELETE | `/api/dictionary` | 清空自定义词典，返回删除数量 |
+| GET | `/api/tts?text=...` | 朗读音频（audio/mpeg）：单词走有道，句子走 Edge TTS，自动互切 |
 | GET | `/api/documents` | 对照记录列表（不含正文），可带 `?q=` 按标题搜索 |
 | POST | `/api/documents` | 保存对照记录，body `{ title, direction, zhMode, align, segments }`，返回 `{ id }` |
 | GET | `/api/documents/:id` | 读取单条记录（含 segments 正文），阅读页使用 |
@@ -278,13 +304,24 @@ Node 22 的 `node:sqlite` 仍标记为实验特性，功能正常，警告可忽
 服务会自动顺延端口，查看控制台输出；也可修改 `config.json` 的 `port`。
 
 **能离线使用吗？**
-查词和翻译依赖 AI 接口，必须联网；已入库的词卡可离线查看（生词本与词卡都在本地数据库）。PWA 安装后界面与已缓存的静态资源可离线打开，但查词、翻译、复习评分仍需服务端运行并联网。
+查词和翻译依赖 AI 接口，必须联网；已入库的词卡可离线查看（生词本与词卡都在本地数据库）。朗读优先用浏览器自带 TTS（可离线），但长句降级到服务端 `/api/tts` 时需要联网访问有道或 Edge。PWA 安装后界面与已缓存的静态资源可离线打开，但查词、翻译、复习评分仍需服务端运行并联网。
 
 **Anki 牌组怎么导入？**
 在生词本点「导出 Anki 牌组」得到 `.apkg`，Anki 桌面端「文件 → 导入」选择该文件；手机端可用 AnkiDroid / AnkiMobile 同步或直接导入。牌组名为「词镜」，标签为「词镜」+ 掌握状态。
 
 **手机上怎么用？**
 把 `config.json` 的 `host` 改为 `0.0.0.0` 并重启，手机与电脑连同一局域网后访问 `http://电脑IP:3000`；浏览器菜单「添加到主屏幕」即可作为 App 打开。
+
+**平板 / Termux 上 clone 后单词朗读正常、句子朗读报 `Cannot find module 'msedge-tts'`？**
+
+这是旧版本的依赖问题：`node_modules/` 被 `.gitignore` 忽略，`git clone` 不会带上；单词朗读走浏览器原生 TTS 或有道接口，句子朗读才需要降级到服务端 Edge TTS，所以只有句子会暴露「缺依赖」。另外 `msedge-tts` 包自带 `preinstall: npx only-allow pnpm`，在 Termux 上直接 `npm install` 也可能失败。
+
+当前版本已把 Edge TTS 改成 `lib/edge-tts.js` 的纯 Node 内置实现，`git pull` 更新代码后**无需 `npm install`** 即可朗读。若仍失败：
+
+1. `node -v` 确认 >= 22.5（低于此版本既没有内置 `node:sqlite`，也没有内置 WebSocket）；
+2. 确认能访问 `speech.platform.bing.com`（Edge）或 `dict.youdao.com`（有道），二者都通不了时朗读必然失败；
+3. 检查设备时间是否准确（GEC 签名按时间生成）；
+4. 极少数 Node 版本的内置 WebSocket 不接受自定义请求头，可 `npm install ws --ignore-scripts` 作为兼容兜底。
 
 **导入词典失败怎么看原因？**
 页面会显示失败原因（解析位置、被跳过的词条数及示例）；服务端同时把详细信息写入 `data/import.log`，控制台也会输出。常见原因是 JSON 字段名不匹配或文件不是合法 JSON（如尾逗号、JSON Lines 混用）。
@@ -301,5 +338,5 @@ Node 22 的 `node:sqlite` 仍标记为实验特性，功能正常，警告可忽
 - 复习调度按日历天计算（忘记为 10 分钟），未做逐小时精细调度。
 - 「实词英译」由 AI 判断词性并替换，个别虚词或词性判断可能有偏差。
 - 自定义词典只保存单词、音标、释义三类信息，不含派生词、例句与搭配。
-- PWA 仅离线缓存界面与静态资源；查词、翻译、评分、Anki 导出都需要服务端在线。
+- PWA 仅离线缓存界面与静态资源；查词、翻译、评分、Anki 导出都需要服务端在线；句子朗读在浏览器原生 TTS 失败后依赖外网 TTS 接口。
 - Anki 导出为一次性全量导出，导出后新加入的词需要重新导出。

@@ -47,6 +47,14 @@ try {
   console.warn('[提示] 未安装 mammoth，.docx 上传不可用。请在项目目录运行 npm install');
 }
 
+// Edge 在线 TTS：纯 Node 内置实现，clone 后无需 npm install 即可朗读任意句子
+let edgeTTS = null;
+try {
+  edgeTTS = require('./lib/edge-tts');
+} catch (err) {
+  console.warn('[提示] 未找到 lib/edge-tts.js，句子朗读的服务端兜底不可用');
+}
+
 /* ---------- SQLite ---------- */
 let db = null;
 
@@ -1272,47 +1280,34 @@ async function handleVocab(req, res, url) {
   return sendJSON(res, 404, { error: '接口不存在' });
 }
 
-// 服务端 TTS：优先走有道 dictvoice（单词发音快、可缓存）；
-// 有道无法合成任意句子（对长句/不在词典里的短语返回 500 "returned null audio"）时，
-// 回退到微软 Edge 在线 TTS（WebSocket，免费无密钥，支持任意中英文句子）
+// 服务端 TTS：浏览器原生 speechSynthesis 在部分 Android 环境（长句 / 缺语音包）会失败，
+// 前端随即降级到 /api/tts。服务端用有道 dictvoice（单词发音快、可缓存）+ Edge 在线 TTS
+// （支持任意中英文句子，lib/edge-tts.js 为纯 Node 内置实现，不依赖 node_modules）。
+// 有道对句子并不稳定：含标点、撇号或较长的文本常返回 500 "returned null audio"，
+// 少数情况还会以 200 返回 JSON 错误页，因此需要多参数重试并校验 Content-Type。
 async function fetchYoudaoTTS(text, isZh, type) {
-  const target = isZh
-    ? 'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(text) + '&le=zh'
-    : 'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(text) + '&type=' + type;
-  const r = await fetch(target, {
-    headers: { 'User-Agent': 'Mozilla/5.0 WordLens' },
-    signal: AbortSignal.timeout(15000)
-  });
-  if (!r.ok) return null;
-  const buf = Buffer.from(await r.arrayBuffer());
-  return buf.length ? buf : null;
-}
-
-// 转义 XML 特殊字符：msedge-tts 会把文本原样拼进 SSML，
-// 若含 & < > 会使 SSML 非法，Edge 直接断流（no turn.end）→ 502 → 前端报 “not support”
-function escapeSSML(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const variants = isZh ? ['&le=zh'] : [`&type=${type}`, '&le=en'];
+  for (const suffix of variants) {
+    try {
+      const target = 'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(text) + suffix;
+      const r = await fetch(target, {
+        headers: { 'User-Agent': 'Mozilla/5.0 WordLens' },
+        signal: AbortSignal.timeout(8000)
+      });
+      if (!r.ok) continue;
+      const contentType = String(r.headers.get('content-type') || '');
+      if (!/audio|mpeg|octet-stream/i.test(contentType)) continue;
+      const buf = Buffer.from(await r.arrayBuffer());
+      if (buf.length > 1024) return buf;
+    } catch (err) { /* 换一种参数重试 */ }
+  }
+  return null;
 }
 
 async function synthEdgeTTS(text, isZh) {
-  const { MsEdgeTTS, OUTPUT_FORMAT } = require('msedge-tts');
-  const voice = isZh ? 'zh-CN-XiaoxiaoNeural' : 'en-US-AriaNeural';
-  const tts = new MsEdgeTTS();
-  try {
-    await tts.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
-    const { audioStream } = await tts.toStream(escapeSSML(text));
-    const chunks = [];
-    await new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error('合成超时')), 45000);
-      audioStream.on('data', (c) => chunks.push(c));
-      audioStream.on('end', () => { clearTimeout(timer); resolve(); });
-      audioStream.on('error', (e) => { clearTimeout(timer); reject(e); });
-    });
-    const buf = Buffer.concat(chunks);
-    return buf.length ? buf : null;
-  } finally {
-    try { tts.close(); } catch (e) { /* ignore */ }
-  }
+  if (!edgeTTS) throw new Error('缺少 lib/edge-tts.js，请从仓库更新代码');
+  const buf = await edgeTTS.synthesize(text, { isZh });
+  return buf && buf.length ? buf : null;
 }
 
 async function handleTTS(req, res, url) {
@@ -1331,25 +1326,26 @@ async function handleTTS(req, res, url) {
     return res.end(cached);
   }
 
-  let buf = null;
-  let errMsg = '';
-  try {
-    buf = await fetchYoudaoTTS(text, isZh, type);
-    if (!buf) errMsg = '有道返回空或非 200';
-  } catch (err) {
-    errMsg = '有道获取失败：' + err.message;
-  }
+  // 句子（含空格 / 较长中文）直接用 Edge：有道对长句大多返回 500，先试它只是白等；
+  // 单词优先有道，发音快且可缓存。任一渠道失败自动切换另一个。
+  const isSentence = /\s/.test(text) || text.length > 40;
+  const providers = isSentence
+    ? [['Edge TTS', () => synthEdgeTTS(text, isZh)], ['有道', () => fetchYoudaoTTS(text, isZh, type)]]
+    : [['有道', () => fetchYoudaoTTS(text, isZh, type)], ['Edge TTS', () => synthEdgeTTS(text, isZh)]];
 
-  if (!buf) {
+  let buf = null;
+  const failures = [];
+  for (const [name, run] of providers) {
     try {
-      buf = await synthEdgeTTS(text, isZh);
-      if (!buf) errMsg += '；Edge TTS 返回空';
+      const result = await run();
+      if (result && result.length) { buf = result; break; }
+      failures.push(name + '返回空音频');
     } catch (err) {
-      errMsg += '；Edge TTS 失败：' + err.message;
+      failures.push(name + '失败：' + (err && err.message ? err.message : String(err)));
     }
   }
 
-  if (!buf) return sendJSON(res, 502, { error: 'TTS 获取失败：' + errMsg });
+  if (!buf) return sendJSON(res, 502, { error: 'TTS 获取失败：' + failures.join('；') });
 
   if (ttsCache.size > 500) ttsCache.clear();
   ttsCache.set(cacheKey, buf);
@@ -1530,8 +1526,10 @@ function listen(port, retried = 0) {
       process.exit(1);
     }
   });
-  server.listen(port, DEFAULTS.host, () => {
-    console.log(`词镜已启动：http://${DEFAULTS.host}:${port}`);
+  // 允许在 config.json 里把 host 改为 0.0.0.0，供同一局域网的手机 / 平板访问
+  const host = loadConfig().host || DEFAULTS.host;
+  server.listen(port, host, () => {
+    console.log(`词镜已启动：http://${host}:${port}`);
     if (!loadConfig().apiKey) {
       console.log('尚未配置 API Key，请在浏览器「设置」页填写 DeepSeek Key。');
     }
