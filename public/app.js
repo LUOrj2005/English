@@ -253,62 +253,72 @@ if (window.speechSynthesis) {
   });
 }
 
+// 服务端 TTS 兜底音频（浏览器不提供 speechSynthesis 或原生失败时使用）
+let ttsAudioEl = null;
+function speakViaAudio(text) {
+  const src = '/api/tts?type=2&text=' + encodeURIComponent(String(text).trim());
+  if (!ttsAudioEl) ttsAudioEl = new Audio();
+  try { ttsAudioEl.pause(); } catch (e) { /* ignore */ }
+  ttsAudioEl.src = src;
+  const p = ttsAudioEl.play();
+  if (p && typeof p.catch === 'function') {
+    p.catch((e) => toast('朗读播放失败：' + (e && e.message ? e.message : '请检查网络或服务'), 'error'));
+  }
+}
+
 function speakWord(word) {
   if (!word) return;
-  if (!window.speechSynthesis) {
-    toast('当前浏览器不支持语音朗读', 'error');
-    return;
-  }
   const text = String(word).trim();
   if (!text) return;
+  if (ttsAudioEl) { try { ttsAudioEl.pause(); } catch (e) { /* ignore */ } }
 
+  // 浏览器不提供原生 TTS（如 http 非安全上下文）→ 走服务端 TTS
+  if (!window.speechSynthesis) {
+    speakViaAudio(text);
+    return;
+  }
+
+  let started = false;
+  let failed = false;
   const build = () => {
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = 'en-US';
     utter.rate = 0.9;
     const voice = ttsVoice || pickEnglishVoice();
-    // 部分设备不接受指定 voice 会静默失败，赋值失败时回退到默认语音
     if (voice && /^en/i.test(String(voice.lang || ''))) {
       try { utter.voice = voice; } catch (e) { /* ignore */ }
     }
     return utter;
   };
-
-  // 失败时给出明确原因，而不是静默无反应（Android 平板最常见：未装英语语音包）
-  const onError = (e) => {
-    const err = e && e.error;
-    if (err === 'canceled' || err === 'interrupted') return; // 主动打断不算故障
-    const voices = speechSynthesis.getVoices();
-    const hasEn = voices.some((v) => /^en/i.test(String(v.lang || '')));
-    const hint = !voices.length
-      ? '设备没有可用的语音引擎，请在系统设置安装「文字转语音」引擎'
-      : (!hasEn ? '设备没有英语语音包，请在系统 TTS 设置中下载英语语音' : '');
-    toast('朗读失败' + (err ? `（${err}）` : '') + (hint ? '：' + hint : ''), 'error');
-  };
-
-  let started = false;
+  const fallback = () => { if (!failed) { failed = true; speakViaAudio(text); } };
   const wire = (utter) => {
     utter.onstart = () => { started = true; };
-    utter.onerror = onError;
+    utter.onerror = (e) => {
+      const err = e && e.error;
+      if (err === 'canceled' || err === 'interrupted') return; // 主动打断不算故障
+      fallback(); // 原生失败（如无英语语音包）→ 降级服务端 TTS
+    };
   };
 
-  if (speechSynthesis.speaking || speechSynthesis.pending) {
-    speechSynthesis.cancel();
-  }
+  if (speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel();
   const u = build();
   wire(u);
   try { speechSynthesis.resume(); } catch (e) { /* ignore */ }
   speechSynthesis.speak(u);
 
-  // Android Chrome cancel→speak 竞态兜底：250ms 仍未真正开始则重试一次
+  // Android cancel→speak 竞态兜底：250ms 未真正开始则重试一次
   setTimeout(() => {
-    if (!started && !speechSynthesis.speaking) {
+    if (!started && !speechSynthesis.speaking && !failed) {
       const r = build();
       wire(r);
       try { speechSynthesis.resume(); } catch (e) { /* ignore */ }
       speechSynthesis.speak(r);
     }
   }, 250);
+  // 原生始终没开始也没报错 → 降级服务端 TTS
+  setTimeout(() => {
+    if (!started && !speechSynthesis.speaking && !failed) fallback();
+  }, 700);
 }
 
 /* ---------- 生词本 ---------- */

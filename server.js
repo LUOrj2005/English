@@ -4,6 +4,10 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
+// 服务端 TTS 兜底：浏览器在非安全上下文（如 http 局域网访问）不提供 speechSynthesis，
+// 由服务端代理有道发音接口返回音频，前端用 <audio> 播放
+const ttsCache = new Map();
+
 const ROOT = __dirname;
 const PUBLIC_DIR = path.join(ROOT, 'public');
 const DATA_DIR = path.join(ROOT, 'data');
@@ -1187,6 +1191,39 @@ async function handleVocab(req, res, url) {
   return sendJSON(res, 404, { error: '接口不存在' });
 }
 
+// 服务端 TTS：代理有道 dictvoice 发音（美式 type=2 / 英式 type=1），带内存缓存
+async function handleTTS(req, res, url) {
+  const text = String(url.searchParams.get('text') || '').trim();
+  if (!text) return sendJSON(res, 400, { error: 'text 不能为空' });
+  if (text.length > 300) return sendJSON(res, 400, { error: 'text 过长' });
+  const type = url.searchParams.get('type') === '1' ? '1' : '2';
+  const cacheKey = type + '|' + text.toLowerCase();
+
+  const cached = ttsCache.get(cacheKey);
+  if (cached) {
+    res.writeHead(200, { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'public, max-age=86400' });
+    return res.end(cached);
+  }
+
+  try {
+    const target = 'https://dict.youdao.com/dictvoice?audio=' +
+      encodeURIComponent(text) + '&type=' + type;
+    const r = await fetch(target, {
+      headers: { 'User-Agent': 'Mozilla/5.0 WordLens' },
+      signal: AbortSignal.timeout(15000)
+    });
+    if (!r.ok) return sendJSON(res, 502, { error: 'TTS 上游返回 ' + r.status });
+    const buf = Buffer.from(await r.arrayBuffer());
+    if (!buf.length) return sendJSON(res, 502, { error: 'TTS 上游返回空内容' });
+    if (ttsCache.size > 500) ttsCache.clear();
+    ttsCache.set(cacheKey, buf);
+    res.writeHead(200, { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'public, max-age=86400' });
+    res.end(buf);
+  } catch (err) {
+    return sendJSON(res, 502, { error: 'TTS 获取失败：' + err.message });
+  }
+}
+
 async function handleAPI(req, res, url) {
   const p = url.pathname;
 
@@ -1280,6 +1317,7 @@ async function handleAPI(req, res, url) {
     return sendJSON(res, 200, { ok: true, deleted: result.changes });
   }
 
+  if (p === '/api/tts' && req.method === 'GET') return handleTTS(req, res, url);
   if (p === '/api/dict' && req.method === 'POST') return handleDict(req, res);
   if (p === '/api/ai' && req.method === 'POST') return handleAI(req, res);
   if (p === '/api/docx' && req.method === 'POST') return handleDocx(req, res);
