@@ -254,7 +254,11 @@ if (window.speechSynthesis) {
 }
 
 function speakWord(word) {
-  if (!word || !window.speechSynthesis) return;
+  if (!word) return;
+  if (!window.speechSynthesis) {
+    toast('当前浏览器不支持语音朗读', 'error');
+    return;
+  }
   const text = String(word).trim();
   if (!text) return;
 
@@ -263,25 +267,48 @@ function speakWord(word) {
     utter.lang = 'en-US';
     utter.rate = 0.9;
     const voice = ttsVoice || pickEnglishVoice();
-    // 部分平板/浏览器不接受指定 voice，赋值会静默失败，加守卫与 try/catch
+    // 部分设备不接受指定 voice 会静默失败，赋值失败时回退到默认语音
     if (voice && /^en/i.test(String(voice.lang || ''))) {
       try { utter.voice = voice; } catch (e) { /* ignore */ }
     }
     return utter;
   };
 
-  const fire = () => {
-    try { speechSynthesis.resume(); } catch (e) { /* ignore */ }
-    speechSynthesis.speak(build());
+  // 失败时给出明确原因，而不是静默无反应（Android 平板最常见：未装英语语音包）
+  const onError = (e) => {
+    const err = e && e.error;
+    if (err === 'canceled' || err === 'interrupted') return; // 主动打断不算故障
+    const voices = speechSynthesis.getVoices();
+    const hasEn = voices.some((v) => /^en/i.test(String(v.lang || '')));
+    const hint = !voices.length
+      ? '设备没有可用的语音引擎，请在系统设置安装「文字转语音」引擎'
+      : (!hasEn ? '设备没有英语语音包，请在系统 TTS 设置中下载英语语音' : '');
+    toast('朗读失败' + (err ? `（${err}）` : '') + (hint ? '：' + hint : ''), 'error');
   };
 
-  // 修复 Android Chrome cancel→speak 竞态：正在发音时先取消，下一 tick 再朗读新内容
+  let started = false;
+  const wire = (utter) => {
+    utter.onstart = () => { started = true; };
+    utter.onerror = onError;
+  };
+
   if (speechSynthesis.speaking || speechSynthesis.pending) {
     speechSynthesis.cancel();
-    setTimeout(fire, 0);
-  } else {
-    fire();
   }
+  const u = build();
+  wire(u);
+  try { speechSynthesis.resume(); } catch (e) { /* ignore */ }
+  speechSynthesis.speak(u);
+
+  // Android Chrome cancel→speak 竞态兜底：250ms 仍未真正开始则重试一次
+  setTimeout(() => {
+    if (!started && !speechSynthesis.speaking) {
+      const r = build();
+      wire(r);
+      try { speechSynthesis.resume(); } catch (e) { /* ignore */ }
+      speechSynthesis.speak(r);
+    }
+  }, 250);
 }
 
 /* ---------- 生词本 ---------- */
