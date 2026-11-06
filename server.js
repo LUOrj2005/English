@@ -275,7 +275,10 @@ function gradeReview(word, grade) {
   return rowToVocab(db.prepare('SELECT * FROM vocab WHERE word = ?').get(word));
 }
 
+const COUNTABLE_TABLES = new Set(['vocab', 'word_cards', 'dict_entries', 'documents', 'gen_sentences']);
 function countRows(table) {
+  // 表名是拼接进 SQL 的，加一层白名单兜底，防止以后误把请求参数传进来
+  if (!COUNTABLE_TABLES.has(table)) throw new Error('不支持统计的数据表');
   return db.prepare(`SELECT COUNT(*) AS n FROM ${table}`).get().n;
 }
 
@@ -873,19 +876,28 @@ function escapeHtml(value) {
 }
 
 function readBody(req, limit = 30 * 1024 * 1024) {
+  // 每个接口的上限不同，错误信息按实际 limit 生成，避免一律提示「30MB」
+  const limitText = limit >= 1024 * 1024
+    ? `${Math.round(limit / 1024 / 1024)}MB`
+    : `${Math.round(limit / 1024)}KB`;
   return new Promise((resolve, reject) => {
     let size = 0;
+    let overLimit = false;
     const chunks = [];
     req.on('data', (chunk) => {
       size += chunk.length;
       if (size > limit) {
-        reject(new Error('上传内容过大（上限 30MB）'));
-        req.destroy();
+        // 不能 req.destroy()：那会掐断连接，上层的 413 响应也发不出去。
+        // 继续把剩余数据读完并丢弃，让请求正常结束后统一返回 413。
+        if (!overLimit) {
+          overLimit = true;
+          reject(new Error(`上传内容过大（上限 ${limitText}）`));
+        }
         return;
       }
       chunks.push(chunk);
     });
-    req.on('end', () => resolve(Buffer.concat(chunks)));
+    req.on('end', () => { if (!overLimit) resolve(Buffer.concat(chunks)); });
     req.on('error', reject);
   });
 }
@@ -1347,7 +1359,11 @@ async function handleTTS(req, res, url) {
 
   if (!buf) return sendJSON(res, 502, { error: 'TTS 获取失败：' + failures.join('；') });
 
-  if (ttsCache.size > 500) ttsCache.clear();
+  // 淘汰最老的一条，而不是清空全部缓存（避免偶发抖动后所有音频都要重新合成）
+  if (ttsCache.size >= 500) {
+    const oldest = ttsCache.keys().next().value;
+    if (oldest !== undefined) ttsCache.delete(oldest);
+  }
   ttsCache.set(cacheKey, buf);
   res.writeHead(200, { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'public, max-age=86400' });
   res.end(buf);
@@ -1465,9 +1481,16 @@ async function handleAPI(req, res, url) {
 
 function serveStatic(req, res, url) {
   let rel = url.pathname === '/' ? '/index.html' : url.pathname;
-  rel = decodeURIComponent(rel);
+  try {
+    rel = decodeURIComponent(rel);
+  } catch (err) {
+    // 畸形的百分号编码（如 /%ZZ）应返回 400，而不是抛异常变成 500
+    res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+    return res.end('请求路径编码有误');
+  }
   const filePath = path.join(PUBLIC_DIR, path.normalize(rel));
-  if (!filePath.startsWith(PUBLIC_DIR)) {
+  // 用带路径分隔符的前缀判断，避免 public-evil 这类同级目录被误判为 public 内
+  if (filePath !== PUBLIC_DIR && !filePath.startsWith(PUBLIC_DIR + path.sep)) {
     res.writeHead(403);
     return res.end('Forbidden');
   }
@@ -1495,7 +1518,9 @@ const server = http.createServer(async (req, res) => {
     }
   } catch (err) {
     if (!res.headersSent) {
-      sendJSON(res, 500, { error: err.message || '服务器内部错误' });
+      // 请求体超限应返回 413，而不是笼统的 500
+      const status = /内容过大/.test(err.message || '') ? 413 : 500;
+      sendJSON(res, status, { error: err.message || '服务器内部错误' });
     } else {
       res.end();
     }

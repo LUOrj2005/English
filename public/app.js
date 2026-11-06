@@ -1672,29 +1672,19 @@ document.addEventListener('mousedown', (event) => {
   hidePopover();
 });
 
+// 全局快捷键统一在文件末尾的处理器里（/、Escape、听写回车、翻页等）。
+// 这里只保留拼写测验的回车，避免两个 keydown 处理器重复响应同一次按键；
+// 原先 dictInput 的回车被误绑到 submitDictation（听写进行中会误判分），已移除。
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Enter' && event.target && event.target.id === 'spellInput') {
     event.preventDefault();
     submitSpell();
     return;
   }
-  if (event.key === 'Enter' && event.target && event.target.id === 'dictInput') {
-    event.preventDefault();
-    submitDictation();
-    return;
-  }
+  // 输入框内按 Escape 也要能关闭点词弹层（末尾的处理器在 typing 时会提前 return）
   if (event.key === 'Escape') {
     hidePopover();
     return;
-  }
-  if (event.key === '/' && !event.metaKey && !event.ctrlKey && !event.altKey) {
-    const tag = document.activeElement && document.activeElement.tagName;
-    if (!['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) {
-      event.preventDefault();
-      switchView('dict');
-      el.dictInput.focus();
-      el.dictInput.select();
-    }
   }
 });
 
@@ -1958,7 +1948,7 @@ document.addEventListener('keydown', (event) => {
   const tag = target && target.tagName;
   const typing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (target && target.isContentEditable);
 
-  if (event.key === '/' && !typing) {
+  if (event.key === '/' && !typing && !event.metaKey && !event.ctrlKey && !event.altKey) {
     event.preventDefault();
     switchView('dict');
     el.dictInput.focus();

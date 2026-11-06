@@ -1,0 +1,667 @@
+[
+  {
+    "word": "agile",
+    "phonetic": "/ˈædʒaɪl/",
+    "senses": [
+      { "pos": "adj.", "meaning": "敏捷的；灵活的（迭代式开发方法）" },
+      { "pos": "n.", "meaning": "敏捷开发（Agile 的简称）" }
+    ]
+  },
+  {
+    "word": "sprint",
+    "phonetic": "/sprɪnt/",
+    "senses": [
+      { "pos": "n.", "meaning": "冲刺；一个迭代周期（通常 1–4 周）" },
+      { "pos": "v.", "meaning": "集中短时攻关" }
+    ]
+  },
+  {
+    "word": "backlog",
+    "phonetic": "/ˈbæklɒɡ/",
+    "senses": [
+      { "pos": "n.", "meaning": "待办清单；积压的需求或缺陷（产品待办列表）" }
+    ]
+  },
+  {
+    "word": "milestone",
+    "phonetic": "/ˈmaɪlstəʊn/",
+    "senses": [
+      { "pos": "n.", "meaning": "里程碑；关键节点（GitHub 也用于阶段标记）" }
+    ]
+  },
+  {
+    "word": "roadmap",
+    "phonetic": "/ˈrəʊdmæp/",
+    "senses": [
+      { "pos": "n.", "meaning": "路线图；产品或技术的中长期规划" }
+    ]
+  },
+  {
+    "word": "stakeholder",
+    "phonetic": "/ˈsteɪkhəʊldə(r)/",
+    "senses": [
+      { "pos": "n.", "meaning": "利益相关方；干系人（受项目影响的人）" }
+    ]
+  },
+  {
+    "word": "requirement",
+    "phonetic": "/rɪˈkwaɪəmənt/",
+    "senses": [
+      { "pos": "n.", "meaning": "需求；要求（requirements.txt 里的依赖清单也用此词）" }
+    ]
+  },
+  {
+    "word": "specification",
+    "phonetic": "/ˌspesɪfɪˈkeɪʃn/",
+    "senses": [
+      { "pos": "n.", "meaning": "规格说明；技术规范（常缩写为 spec）" }
+    ]
+  },
+  {
+    "word": "scope",
+    "phonetic": "/skəʊp/",
+    "senses": [
+      { "pos": "n.", "meaning": "范围（项目范围或变量作用域）" },
+      { "pos": "v.", "meaning": "界定范围；评估" }
+    ]
+  },
+  {
+    "word": "deliverable",
+    "phonetic": "/dɪˈlɪvərəbl/",
+    "senses": [
+      { "pos": "n.", "meaning": "交付物；可交付成果" }
+    ]
+  },
+  {
+    "word": "deadline",
+    "phonetic": "/ˈdedlaɪn/",
+    "senses": [
+      { "pos": "n.", "meaning": "截止日期；最后期限" }
+    ]
+  },
+  {
+    "word": "handover",
+    "phonetic": "/ˈhændəʊvə(r)/",
+    "senses": [
+      { "pos": "n.", "meaning": "交接；移交（工作或文档交给下一个人）" }
+    ]
+  },
+  {
+    "word": "review",
+    "phonetic": "/rɪˈvjuː/",
+    "senses": [
+      { "pos": "n.", "meaning": "评审；复查（code review 代码评审、pull request 审核）" },
+      { "pos": "v.", "meaning": "审阅；复核" }
+    ]
+  },
+  {
+    "word": "feedback",
+    "phonetic": "/ˈfiːdbæk/",
+    "senses": [
+      { "pos": "n.", "meaning": "反馈；反馈意见" }
+    ]
+  },
+  {
+    "word": "approve",
+    "phonetic": "/əˈpruːv/",
+    "senses": [
+      { "pos": "v.", "meaning": "批准；通过（评审或合并请求）" }
+    ]
+  },
+  {
+    "word": "escalate",
+    "phonetic": "/ˈeskəleɪt/",
+    "senses": [
+      { "pos": "v.", "meaning": "上报；升级（把问题交给更高层级处理）" }
+    ]
+  },
+  {
+    "word": "prioritize",
+    "phonetic": "/praɪˈɒrətaɪz/",
+    "senses": [
+      { "pos": "v.", "meaning": "排定优先级；优先处理" }
+    ]
+  },
+  {
+    "word": "retrospective",
+    "phonetic": "/ˌretrəˈspektɪv/",
+    "senses": [
+      { "pos": "n.", "meaning": "复盘会；迭代回顾会议（常简称 retro）" },
+      { "pos": "adj.", "meaning": "回顾的；事后的" }
+    ]
+  },
+  {
+    "word": "standup",
+    "phonetic": "/ˈstændʌp/",
+    "senses": [
+      { "pos": "n.", "meaning": "站会；每日简短同步会" }
+    ]
+  },
+  {
+    "word": "consensus",
+    "phonetic": "/kənˈsensəs/",
+    "senses": [
+      { "pos": "n.", "meaning": "共识；一致意见" }
+    ]
+  },
+  {
+    "word": "tradeoff",
+    "phonetic": "/ˈtreɪdɒf/",
+    "senses": [
+      { "pos": "n.", "meaning": "权衡；取舍（性能与可维护性的取舍）" }
+    ]
+  },
+  {
+    "word": "ownership",
+    "phonetic": "/ˈəʊnəʃɪp/",
+    "senses": [
+      { "pos": "n.", "meaning": "归属；负责权（谁负责维护这块代码）" }
+    ]
+  },
+  {
+    "word": "workflow",
+    "phonetic": "/ˈwɜːkfləʊ/",
+    "senses": [
+      { "pos": "n.", "meaning": "工作流；流程（GitHub Actions 里也叫 workflow）" }
+    ]
+  },
+  {
+    "word": "rollout",
+    "phonetic": "/ˈrəʊlaʊt/",
+    "senses": [
+      { "pos": "n.", "meaning": "上线推广；分批发布" }
+    ]
+  },
+  {
+    "word": "rollback",
+    "phonetic": "/ˈrəʊlbæk/",
+    "senses": [
+      { "pos": "n.", "meaning": "回滚；恢复到上一个可用版本" },
+      { "pos": "v.", "meaning": "回滚；撤销发布" }
+    ]
+  },
+  {
+    "word": "hotfix",
+    "phonetic": "/ˈhɒtfɪks/",
+    "senses": [
+      { "pos": "n.", "meaning": "紧急修复补丁（线上问题临时修补）" },
+      { "pos": "v.", "meaning": "紧急修补" }
+    ]
+  },
+  {
+    "word": "patch",
+    "phonetic": "/pætʃ/",
+    "senses": [
+      { "pos": "n.", "meaning": "补丁；小版本修复（语义化版本最后一位）" },
+      { "pos": "v.", "meaning": "打补丁；修补" }
+    ]
+  },
+  {
+    "word": "changelog",
+    "phonetic": "/ˈtʃeɪndʒlɒɡ/",
+    "senses": [
+      { "pos": "n.", "meaning": "变更日志；版本更新记录（常见文件名 CHANGELOG.md）" }
+    ]
+  },
+  {
+    "word": "staging",
+    "phonetic": "/ˈsteɪdʒɪŋ/",
+    "senses": [
+      { "pos": "n.", "meaning": "预发布环境（上线前验证）；暂存区（Git staging area）" }
+    ]
+  },
+  {
+    "word": "production",
+    "phonetic": "/prəˈdʌkʃn/",
+    "senses": [
+      { "pos": "n.", "meaning": "生产环境；正式对外服务的环境" }
+    ]
+  },
+  {
+    "word": "canary",
+    "phonetic": "/kəˈneəri/",
+    "senses": [
+      { "pos": "n.", "meaning": "金丝雀发布（先放少量流量验证新版本）" }
+    ]
+  },
+  {
+    "word": "downtime",
+    "phonetic": "/ˈdaʊntaɪm/",
+    "senses": [
+      { "pos": "n.", "meaning": "停机时间；服务不可用时长" }
+    ]
+  },
+  {
+    "word": "uptime",
+    "phonetic": "/ˈʌptaɪm/",
+    "senses": [
+      { "pos": "n.", "meaning": "正常运行时间；可用时长（常用百分比衡量）" }
+    ]
+  },
+  {
+    "word": "maintenance",
+    "phonetic": "/ˈmeɪntənəns/",
+    "senses": [
+      { "pos": "n.", "meaning": "维护；保养（维护窗口期可能短暂停机）" }
+    ]
+  },
+  {
+    "word": "migration",
+    "phonetic": "/maɪˈɡreɪʃn/",
+    "senses": [
+      { "pos": "n.", "meaning": "迁移（数据库结构、版本或平台迁移）" }
+    ]
+  },
+  {
+    "word": "compatibility",
+    "phonetic": "/kəmˌpætəˈbɪləti/",
+    "senses": [
+      { "pos": "n.", "meaning": "兼容性（新旧版本或不同环境能否配合）" }
+    ]
+  },
+  {
+    "word": "backward",
+    "phonetic": "/ˈbækwəd/",
+    "senses": [
+      { "pos": "adj.", "meaning": "向后的（backward compatibility 向后兼容）" }
+    ]
+  },
+  {
+    "word": "stable",
+    "phonetic": "/ˈsteɪbl/",
+    "senses": [
+      { "pos": "adj.", "meaning": "稳定的；可用于生产环境的" },
+      { "pos": "n.", "meaning": "稳定版（相对于测试版）" }
+    ]
+  },
+  {
+    "word": "tag",
+    "phonetic": "/tæɡ/",
+    "senses": [
+      { "pos": "n.", "meaning": "标签；版本标记（Git tag 常用于发版）" },
+      { "pos": "v.", "meaning": "打标签；标记" }
+    ]
+  },
+  {
+    "word": "signoff",
+    "phonetic": "/ˈsaɪnɒf/",
+    "senses": [
+      { "pos": "n.", "meaning": "签字确认；发布前的最终批准" }
+    ]
+  },
+  {
+    "word": "regression",
+    "phonetic": "/rɪˈɡreʃn/",
+    "senses": [
+      { "pos": "n.", "meaning": "回归（改动后原本正常的功能又坏了）" }
+    ]
+  },
+  {
+    "word": "coverage",
+    "phonetic": "/ˈkʌvərɪdʒ/",
+    "senses": [
+      { "pos": "n.", "meaning": "覆盖率；测试覆盖到的代码比例" }
+    ]
+  },
+  {
+    "word": "assertion",
+    "phonetic": "/əˈsɜːʃn/",
+    "senses": [
+      { "pos": "n.", "meaning": "断言（测试中判断条件是否成立）" }
+    ]
+  },
+  {
+    "word": "mock",
+    "phonetic": "/mɒk/",
+    "senses": [
+      { "pos": "n.", "meaning": "模拟对象；替身（隔离外部依赖）" },
+      { "pos": "v.", "meaning": "模拟；打桩" }
+    ]
+  },
+  {
+    "word": "fixture",
+    "phonetic": "/ˈfɪkstʃə(r)/",
+    "senses": [
+      { "pos": "n.", "meaning": "测试夹具；固定的测试样本数据" }
+    ]
+  },
+  {
+    "word": "flaky",
+    "phonetic": "/ˈfleɪki/",
+    "senses": [
+      { "pos": "adj.", "meaning": "不稳定的（测试结果时好时坏）" }
+    ]
+  },
+  {
+    "word": "lint",
+    "phonetic": "/lɪnt/",
+    "senses": [
+      { "pos": "n.", "meaning": "静态检查；代码规范检查" },
+      { "pos": "v.", "meaning": "跑静态检查" }
+    ]
+  },
+  {
+    "word": "refactor",
+    "phonetic": "/ˌriːˈfæktə(r)/",
+    "senses": [
+      { "pos": "v.", "meaning": "重构（不改变外部行为地调整内部结构）" }
+    ]
+  },
+  {
+    "word": "reproduce",
+    "phonetic": "/ˌriːprəˈdjuːs/",
+    "senses": [
+      { "pos": "v.", "meaning": "复现（按步骤让 bug 再次出现）" }
+    ]
+  },
+  {
+    "word": "benchmark",
+    "phonetic": "/ˈbentʃmɑːk/",
+    "senses": [
+      { "pos": "n.", "meaning": "基准；性能基准测试" },
+      { "pos": "v.", "meaning": "做基准测试；比较性能" }
+    ]
+  },
+  {
+    "word": "sanity",
+    "phonetic": "/ˈsænəti/",
+    "senses": [
+      { "pos": "n.", "meaning": "健全性（sanity check 上线前的快速基本检查）" }
+    ]
+  },
+  {
+    "word": "edge case",
+    "phonetic": "/edʒ keɪs/",
+    "senses": [
+      { "pos": "n.", "meaning": "边界情况；极端或罕见的输入情形" }
+    ]
+  },
+  {
+    "word": "workaround",
+    "phonetic": "/ˈwɜːkəraʊnd/",
+    "senses": [
+      { "pos": "n.", "meaning": "临时绕过办法；权宜之计（不是根本修复）" }
+    ]
+  },
+  {
+    "word": "caveat",
+    "phonetic": "/ˈkæviæt/",
+    "senses": [
+      { "pos": "n.", "meaning": "注意事项；附带说明或警告" }
+    ]
+  },
+  {
+    "word": "prerequisite",
+    "phonetic": "/ˌpriːˈrekwəzɪt/",
+    "senses": [
+      { "pos": "n.", "meaning": "先决条件；前置要求（开始前的准备）" }
+    ]
+  },
+  {
+    "word": "rationale",
+    "phonetic": "/ˌræʃəˈnɑːl/",
+    "senses": [
+      { "pos": "n.", "meaning": "依据；设计理由说明" }
+    ]
+  },
+  {
+    "word": "endpoint",
+    "phonetic": "/ˈendpɔɪnt/",
+    "senses": [
+      { "pos": "n.", "meaning": "端点；API 接口地址" }
+    ]
+  },
+  {
+    "word": "payload",
+    "phonetic": "/ˈpeɪləʊd/",
+    "senses": [
+      { "pos": "n.", "meaning": "有效载荷；请求或响应的正文数据" }
+    ]
+  },
+  {
+    "word": "throttle",
+    "phonetic": "/ˈθrɒtl/",
+    "senses": [
+      { "pos": "v.", "meaning": "限流；节流（控制请求频率）" },
+      { "pos": "n.", "meaning": "节流阀；限速机制" }
+    ]
+  },
+  {
+    "word": "quota",
+    "phonetic": "/ˈkwəʊtə/",
+    "senses": [
+      { "pos": "n.", "meaning": "配额；额度（API 调用次数上限）" }
+    ]
+  },
+  {
+    "word": "retry",
+    "phonetic": "/ˌriːˈtraɪ/",
+    "senses": [
+      { "pos": "v.", "meaning": "重试（失败后再发起一次）" },
+      { "pos": "n.", "meaning": "重试动作" }
+    ]
+  },
+  {
+    "word": "backoff",
+    "phonetic": "/ˈbækɒf/",
+    "senses": [
+      { "pos": "n.", "meaning": "退避（失败后逐步拉长重试间隔）" }
+    ]
+  },
+  {
+    "word": "failover",
+    "phonetic": "/ˈfeɪləʊvə(r)/",
+    "senses": [
+      { "pos": "n.", "meaning": "故障转移；自动切换到备用节点" }
+    ]
+  },
+  {
+    "word": "redundancy",
+    "phonetic": "/rɪˈdʌndənsi/",
+    "senses": [
+      { "pos": "n.", "meaning": "冗余；重复的备份能力（避免单点故障）" }
+    ]
+  },
+  {
+    "word": "certificate",
+    "phonetic": "/səˈtɪfɪkət/",
+    "senses": [
+      { "pos": "n.", "meaning": "证书（HTTPS / TLS 用来证明身份）" }
+    ]
+  },
+  {
+    "word": "firewall",
+    "phonetic": "/ˈfaɪəwɔːl/",
+    "senses": [
+      { "pos": "n.", "meaning": "防火墙；控制进出网络流量的规则" }
+    ]
+  },
+  {
+    "word": "outage",
+    "phonetic": "/ˈaʊtɪdʒ/",
+    "senses": [
+      { "pos": "n.", "meaning": "服务中断；故障停机事件" }
+    ]
+  },
+  {
+    "word": "incident",
+    "phonetic": "/ˈɪnsɪdənt/",
+    "senses": [
+      { "pos": "n.", "meaning": "事故；需要记录和复盘的故障事件" }
+    ]
+  },
+  {
+    "word": "alert",
+    "phonetic": "/əˈlɜːt/",
+    "senses": [
+      { "pos": "n.", "meaning": "告警；监控触发的通知" },
+      { "pos": "v.", "meaning": "报警；提醒" }
+    ]
+  },
+  {
+    "word": "metric",
+    "phonetic": "/ˈmetrɪk/",
+    "senses": [
+      { "pos": "n.", "meaning": "指标；可量化的度量值" }
+    ]
+  },
+  {
+    "word": "log",
+    "phonetic": "/lɒɡ/",
+    "senses": [
+      { "pos": "n.", "meaning": "日志；运行记录" },
+      { "pos": "v.", "meaning": "记录日志" }
+    ]
+  },
+  {
+    "word": "monitor",
+    "phonetic": "/ˈmɒnɪtə(r)/",
+    "senses": [
+      { "pos": "v.", "meaning": "监控；持续观察运行状态" },
+      { "pos": "n.", "meaning": "监视器；监控程序" }
+    ]
+  },
+  {
+    "word": "provision",
+    "phonetic": "/prəˈvɪʒn/",
+    "senses": [
+      { "pos": "v.", "meaning": "供给配置；自动创建服务器或资源" },
+      { "pos": "n.", "meaning": "供给；预备" }
+    ]
+  },
+  {
+    "word": "credential",
+    "phonetic": "/krəˈdenʃl/",
+    "senses": [
+      { "pos": "n.", "meaning": "凭据；登录或调用接口用的凭证（常用复数）" }
+    ]
+  },
+  {
+    "word": "convention",
+    "phonetic": "/kənˈvenʃn/",
+    "senses": [
+      { "pos": "n.", "meaning": "约定；惯例（如命名约定 naming convention）" }
+    ]
+  },
+  {
+    "word": "guideline",
+    "phonetic": "/ˈɡaɪdlaɪn/",
+    "senses": [
+      { "pos": "n.", "meaning": "指南；指导原则" }
+    ]
+  },
+  {
+    "word": "explicit",
+    "phonetic": "/ɪkˈsplɪsɪt/",
+    "senses": [
+      { "pos": "adj.", "meaning": "明确的；显式写出来的" }
+    ]
+  },
+  {
+    "word": "implicit",
+    "phonetic": "/ɪmˈplɪsɪt/",
+    "senses": [
+      { "pos": "adj.", "meaning": "隐含的；未明说但默认成立的" }
+    ]
+  },
+  {
+    "word": "ambiguous",
+    "phonetic": "/æmˈbɪɡjuəs/",
+    "senses": [
+      { "pos": "adj.", "meaning": "有歧义的；含糊不清的" }
+    ]
+  },
+  {
+    "word": "concise",
+    "phonetic": "/kənˈsaɪs/",
+    "senses": [
+      { "pos": "adj.", "meaning": "简洁的；没有废话的" }
+    ]
+  },
+  {
+    "word": "legacy",
+    "phonetic": "/ˈleɡəsi/",
+    "senses": [
+      { "pos": "adj.", "meaning": "遗留的；旧系统或旧代码留下的" },
+      { "pos": "n.", "meaning": "遗产；历史遗留物" }
+    ]
+  },
+  {
+    "word": "boilerplate",
+    "phonetic": "/ˈbɔɪləpleɪt/",
+    "senses": [
+      { "pos": "n.", "meaning": "样板代码；每个项目都要重复写的模板" }
+    ]
+  },
+  {
+    "word": "snippet",
+    "phonetic": "/ˈsnɪpɪt/",
+    "senses": [
+      { "pos": "n.", "meaning": "代码片段；一小段可复用的示例" }
+    ]
+  },
+  {
+    "word": "disclaimer",
+    "phonetic": "/dɪsˈkleɪmə(r)/",
+    "senses": [
+      { "pos": "n.", "meaning": "免责声明；责任范围说明" }
+    ]
+  },
+  {
+    "word": "assumption",
+    "phonetic": "/əˈsʌmpʃn/",
+    "senses": [
+      { "pos": "n.", "meaning": "假设；未经证明就当作真的前提" }
+    ]
+  },
+  {
+    "word": "constraint",
+    "phonetic": "/kənˈstreɪnt/",
+    "senses": [
+      { "pos": "n.", "meaning": "约束；限制条件（时间、资源、兼容性）" }
+    ]
+  },
+  {
+    "word": "implication",
+    "phonetic": "/ˌɪmplɪˈkeɪʃn/",
+    "senses": [
+      { "pos": "n.", "meaning": "影响；隐含后果（改动带来的连锁影响）" }
+    ]
+  },
+  {
+    "word": "verbose",
+    "phonetic": "/vɜːˈbəʊs/",
+    "senses": [
+      { "pos": "adj.", "meaning": "冗长的；啰嗦的（日志输出过多也这么说）" }
+    ]
+  },
+  {
+    "word": "draft",
+    "phonetic": "/drɑːft/",
+    "senses": [
+      { "pos": "n.", "meaning": "草稿；草案（draft pull request 未完成的合并请求）" },
+      { "pos": "v.", "meaning": "起草" }
+    ]
+  },
+  {
+    "word": "revise",
+    "phonetic": "/rɪˈvaɪz/",
+    "senses": [
+      { "pos": "v.", "meaning": "修订；按反馈修改" }
+    ]
+  },
+  {
+    "word": "clarify",
+    "phonetic": "/ˈklærəfaɪ/",
+    "senses": [
+      { "pos": "v.", "meaning": "澄清；把含糊的地方说明白" }
+    ]
+  },
+  {
+    "word": "deprecation",
+    "phonetic": "/ˌdeprəˈkeɪʃn/",
+    "senses": [
+      { "pos": "n.", "meaning": "弃用（标记某功能将在未来版本移除）" }
+    ]
+  }
+]

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wordlens-v6';
+const CACHE_NAME = 'wordlens-v7';
 const ASSETS = [
   '/',
   '/index.html',

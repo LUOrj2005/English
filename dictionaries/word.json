@@ -1,0 +1,1200 @@
+[
+  {
+    "word": "project",
+    "phonetic": "/ˈprɒdʒekt/",
+    "senses": [
+      {"pos": "n.", "meaning": "项目；计划"},
+      {"pos": "v.", "meaning": "预计；投射"}
+    ]
+  },
+  {
+    "word": "remote",
+    "phonetic": "/rɪˈməʊt/",
+    "senses": [
+      {"pos": "adj.", "meaning": "远程的；偏僻的"},
+      {"pos": "n.", "meaning": "远程仓库（Git 语境）"}
+    ]
+  },
+  {
+    "word": "sponsor",
+    "phonetic": "/ˈspɒnsə(r)/",
+    "senses": [
+      {"pos": "n.", "meaning": "赞助者；发起者"},
+      {"pos": "v.", "meaning": "赞助；发起"}
+    ]
+  },
+  {
+    "word": "appearance",
+    "phonetic": "/əˈpɪərəns/",
+    "senses": [
+      {"pos": "n.", "meaning": "外观；出现；露面"}
+    ]
+  },
+  {
+    "word": "settings",
+    "phonetic": "/ˈsetɪŋz/",
+    "senses": [
+      {"pos": "n.", "meaning": "设置；设定"}
+    ]
+  },
+  {
+    "word": "repository",
+    "phonetic": "/rɪˈpɒzətri/",
+    "senses": [
+      {"pos": "n.", "meaning": "仓库；代码库（GitHub 核心概念）"}
+    ]
+  },
+  {
+    "word": "fork",
+    "phonetic": "/fɔːk/",
+    "senses": [
+      {"pos": "v.", "meaning": "派生；复制他人仓库到自己账户"},
+      {"pos": "n.", "meaning": "派生出的副本"}
+    ]
+  },
+  {
+    "word": "branch",
+    "phonetic": "/brɑːntʃ/",
+    "senses": [
+      {"pos": "n.", "meaning": "分支；部门"},
+      {"pos": "v.", "meaning": "创建分支；分岔"}
+    ]
+  },
+  {
+    "word": "commit",
+    "phonetic": "/kəˈmɪt/",
+    "senses": [
+      {"pos": "v.", "meaning": "提交（代码更改）"},
+      {"pos": "n.", "meaning": "一次提交记录"}
+    ]
+  },
+  {
+    "word": "merge",
+    "phonetic": "/mɜːdʒ/",
+    "senses": [
+      {"pos": "v.", "meaning": "合并（分支或代码）"},
+      {"pos": "n.", "meaning": "合并操作"}
+    ]
+  },
+  {
+    "word": "pull request",
+    "phonetic": "/pʊl rɪˈkwest/",
+    "senses": [
+      {"pos": "n.", "meaning": "拉取请求；代码合并申请（常缩写为 PR）"}
+    ]
+  },
+  {
+    "word": "issue",
+    "phonetic": "/ˈɪʃuː/",
+    "senses": [
+      {"pos": "n.", "meaning": "问题；议题；任务单"}
+    ]
+  },
+  {
+    "word": "release",
+    "phonetic": "/rɪˈliːs/",
+    "senses": [
+      {"pos": "n.", "meaning": "发布版本"},
+      {"pos": "v.", "meaning": "发布；释放"}
+    ]
+  },
+  {
+    "word": "dashboard",
+    "phonetic": "/ˈdæʃbɔːd/",
+    "senses": [
+      {"pos": "n.", "meaning": "仪表盘；控制面板"}
+    ]
+  },
+  {
+    "word": "profile",
+    "phonetic": "/ˈprəʊfaɪl/",
+    "senses": [
+      {"pos": "n.", "meaning": "个人资料；简介"}
+    ]
+  },
+  {
+    "word": "account",
+    "phonetic": "/əˈkaʊnt/",
+    "senses": [
+      {"pos": "n.", "meaning": "账户；账号"}
+    ]
+  },
+  {
+    "word": "security",
+    "phonetic": "/sɪˈkjʊərəti/",
+    "senses": [
+      {"pos": "n.", "meaning": "安全（设置）"}
+    ]
+  },
+  {
+    "word": "notification",
+    "phonetic": "/ˌnəʊtɪfɪˈkeɪʃn/",
+    "senses": [
+      {"pos": "n.", "meaning": "通知"}
+    ]
+  },
+  {
+    "word": "explore",
+    "phonetic": "/ɪkˈsplɔː(r)/",
+    "senses": [
+      {"pos": "v.", "meaning": "探索；发现（内容）"}
+    ]
+  },
+  {
+    "word": "watch",
+    "phonetic": "/wɒtʃ/",
+    "senses": [
+      {"pos": "v.", "meaning": "关注（接收更新通知）"}
+    ]
+  },
+  {
+    "word": "star",
+    "phonetic": "/stɑː(r)/",
+    "senses": [
+      {"pos": "v.", "meaning": "星标；收藏"},
+      {"pos": "n.", "meaning": "星标数"}
+    ]
+  },
+  {
+    "word": "sponsors",
+    "phonetic": "/ˈspɒnsəz/",
+    "senses": [
+      {"pos": "n.", "meaning": "赞助者（复数）；赞助列表"}
+    ]
+  },
+  {
+    "word": "insights",
+    "phonetic": "/ˈɪnsaɪts/",
+    "senses": [
+      {"pos": "n.", "meaning": "洞察；统计信息（如访问、贡献数据）"}
+    ]
+  },
+  {
+    "word": "clone",
+    "phonetic": "/kləʊn/",
+    "senses": [
+      {"pos": "v.", "meaning": "克隆；复制到本地"}
+    ]
+  },
+  {
+    "word": "download",
+    "phonetic": "/ˌdaʊnˈləʊd/",
+    "senses": [
+      {"pos": "v.", "meaning": "下载"},
+      {"pos": "n.", "meaning": "下载的文件"}
+    ]
+  },
+  {
+    "word": "upload",
+    "phonetic": "/ˌʌpˈləʊd/",
+    "senses": [
+      {"pos": "v.", "meaning": "上传"},
+      {"pos": "n.", "meaning": "上传操作"}
+    ]
+  },
+  {
+    "word": "save",
+    "phonetic": "/seɪv/",
+    "senses": [
+      {"pos": "v.", "meaning": "保存"}
+    ]
+  },
+  {
+    "word": "cancel",
+    "phonetic": "/ˈkænsl/",
+    "senses": [
+      {"pos": "v.", "meaning": "取消"}
+    ]
+  },
+  {
+    "word": "delete",
+    "phonetic": "/dɪˈliːt/",
+    "senses": [
+      {"pos": "v.", "meaning": "删除"}
+    ]
+  },
+  {
+    "word": "confirm",
+    "phonetic": "/kənˈfɜːm/",
+    "senses": [
+      {"pos": "v.", "meaning": "确认"}
+    ]
+  },
+  {
+    "word": "algorithm",
+    "phonetic": "/ˈælɡərɪðəm/",
+    "senses": [
+      {"pos": "n.", "meaning": "算法；解题步骤"}
+    ]
+  },
+  {
+    "word": "architecture",
+    "phonetic": "/ˈɑːkɪtektʃə(r)/",
+    "senses": [
+      {"pos": "n.", "meaning": "架构；体系结构"}
+    ]
+  },
+  {
+    "word": "argument",
+    "phonetic": "/ˈɑːɡjumənt/",
+    "senses": [
+      {"pos": "n.", "meaning": "参数；实参（传给函数的值）"}
+    ]
+  },
+  {
+    "word": "array",
+    "phonetic": "/əˈreɪ/",
+    "senses": [
+      {"pos": "n.", "meaning": "数组"}
+    ]
+  },
+  {
+    "word": "asynchronous",
+    "phonetic": "/eɪˈsɪŋkrənəs/",
+    "senses": [
+      {"pos": "adj.", "meaning": "异步的"}
+    ]
+  },
+  {
+    "word": "authentication",
+    "phonetic": "/ɔːˌθentɪˈkeɪʃn/",
+    "senses": [
+      {"pos": "n.", "meaning": "身份验证；鉴权"}
+    ]
+  },
+  {
+    "word": "binary search",
+    "phonetic": "/ˈbaɪnəri sɜːtʃ/",
+    "senses": [
+      {"pos": "n.", "meaning": "二分查找"}
+    ]
+  },
+  {
+    "word": "branch",
+    "phonetic": "/brɑːntʃ/",
+    "senses": [
+      {"pos": "n.", "meaning": "分支（版本控制）"},
+      {"pos": "v.", "meaning": "创建分支"}
+    ]
+  },
+  {
+    "word": "cache",
+    "phonetic": "/kæʃ/",
+    "senses": [
+      {"pos": "n.", "meaning": "缓存；高速缓存"},
+      {"pos": "v.", "meaning": "缓存"}
+    ]
+  },
+  {
+    "word": "callback",
+    "phonetic": "/ˈkɔːlbæk/",
+    "senses": [
+      {"pos": "n.", "meaning": "回调（函数）"}
+    ]
+  },
+  {
+    "word": "class",
+    "phonetic": "/klɑːs/",
+    "senses": [
+      {"pos": "n.", "meaning": "类（面向对象编程）"}
+    ]
+  },
+  {
+    "word": "commit",
+    "phonetic": "/kəˈmɪt/",
+    "senses": [
+      {"pos": "v.", "meaning": "提交（更改到版本库）"},
+      {"pos": "n.", "meaning": "一次提交记录"}
+    ]
+  },
+  {
+    "word": "compile",
+    "phonetic": "/kəmˈpaɪl/",
+    "senses": [
+      {"pos": "v.", "meaning": "编译"}
+    ]
+  },
+  {
+    "word": "concurrency",
+    "phonetic": "/kənˈkʌrənsi/",
+    "senses": [
+      {"pos": "n.", "meaning": "并发；并发性"}
+    ]
+  },
+  {
+    "word": "configuration",
+    "phonetic": "/kənˌfɪɡəˈreɪʃn/",
+    "senses": [
+      {"pos": "n.", "meaning": "配置；组态"}
+    ]
+  },
+  {
+    "word": "container",
+    "phonetic": "/kənˈteɪnə(r)/",
+    "senses": [
+      {"pos": "n.", "meaning": "容器（数据结构或虚拟化）"}
+    ]
+  },
+  {
+    "word": "deadlock",
+    "phonetic": "/ˈdedlɒk/",
+    "senses": [
+      {"pos": "n.", "meaning": "死锁"}
+    ]
+  },
+  {
+    "word": "debug",
+    "phonetic": "/ˌdiːˈbʌɡ/",
+    "senses": [
+      {"pos": "v.", "meaning": "调试；除错"}
+    ]
+  },
+  {
+    "word": "declaration",
+    "phonetic": "/ˌdekləˈreɪʃn/",
+    "senses": [
+      {"pos": "n.", "meaning": "声明"}
+    ]
+  },
+  {
+    "word": "encapsulation",
+    "phonetic": "/ɪnˌkæpsjuˈleɪʃn/",
+    "senses": [
+      {"pos": "n.", "meaning": "封装"}
+    ]
+  },
+  {
+    "word": "encryption",
+    "phonetic": "/ɪnˈkrɪpʃn/",
+    "senses": [
+      {"pos": "n.", "meaning": "加密"}
+    ]
+  },
+  {
+    "word": "exception",
+    "phonetic": "/ɪkˈsepʃn/",
+    "senses": [
+      {"pos": "n.", "meaning": "异常"}
+    ]
+  },
+  {
+    "word": "framework",
+    "phonetic": "/ˈfreɪmwɜːk/",
+    "senses": [
+      {"pos": "n.", "meaning": "框架"}
+    ]
+  },
+  {
+    "word": "function",
+    "phonetic": "/ˈfʌŋkʃn/",
+    "senses": [
+      {"pos": "n.", "meaning": "函数；功能"}
+    ]
+  },
+  {
+    "word": "hash table",
+    "phonetic": "/hæʃ ˈteɪbl/",
+    "senses": [
+      {"pos": "n.", "meaning": "哈希表；散列表"}
+    ]
+  },
+  {
+    "word": "inheritance",
+    "phonetic": "/ɪnˈherɪtəns/",
+    "senses": [
+      {"pos": "n.", "meaning": "继承"}
+    ]
+  },
+  {
+    "word": "instance",
+    "phonetic": "/ˈɪnstəns/",
+    "senses": [
+      {"pos": "n.", "meaning": "实例；对象"}
+    ]
+  },
+  {
+    "word": "interface",
+    "phonetic": "/ˈɪntəfeɪs/",
+    "senses": [
+      {"pos": "n.", "meaning": "接口；界面"}
+    ]
+  },
+  {
+    "word": "iterate",
+    "phonetic": "/ˈɪtəreɪt/",
+    "senses": [
+      {"pos": "v.", "meaning": "迭代；循环遍历"}
+    ]
+  },
+  {
+    "word": "latency",
+    "phonetic": "/ˈleɪtənsi/",
+    "senses": [
+      {"pos": "n.", "meaning": "延迟；时延"}
+    ]
+  },
+  {
+    "word": "middleware",
+    "phonetic": "/ˈmɪdlweə(r)/",
+    "senses": [
+      {"pos": "n.", "meaning": "中间件"}
+    ]
+  },
+  {
+    "word": "mutex",
+    "phonetic": "/ˈmjuːteks/",
+    "senses": [
+      {"pos": "n.", "meaning": "互斥锁；互斥量"}
+    ]
+  },
+  {
+    "word": "object",
+    "phonetic": "/ˈɒbdʒɪkt/",
+    "senses": [
+      {"pos": "n.", "meaning": "对象（面向对象编程）"}
+    ]
+  },
+  {
+    "word": "overflow",
+    "phonetic": "/ˌəʊvəˈfləʊ/",
+    "senses": [
+      {"pos": "n.", "meaning": "溢出"},
+      {"pos": "v.", "meaning": "溢出"}
+    ]
+  },
+  {
+    "word": "polymorphism",
+    "phonetic": "/ˌpɒlɪˈmɔːfɪzəm/",
+    "senses": [
+      {"pos": "n.", "meaning": "多态"}
+    ]
+  },
+  {
+    "word": "process",
+    "phonetic": "/ˈprəʊses/",
+    "senses": [
+      {"pos": "n.", "meaning": "进程"}
+    ]
+  },
+  {
+    "word": "protocol",
+    "phonetic": "/ˈprəʊtəkɒl/",
+    "senses": [
+      {"pos": "n.", "meaning": "协议"}
+    ]
+  },
+  {
+    "word": "query",
+    "phonetic": "/ˈkwɪəri/",
+    "senses": [
+      {"pos": "n.", "meaning": "查询"},
+      {"pos": "v.", "meaning": "查询"}
+    ]
+  },
+  {
+    "word": "recursion",
+    "phonetic": "/rɪˈkɜːʃn/",
+    "senses": [
+      {"pos": "n.", "meaning": "递归"}
+    ]
+  },
+  {
+    "word": "repository",
+    "phonetic": "/rɪˈpɒzətri/",
+    "senses": [
+      {"pos": "n.", "meaning": "仓库；代码库"}
+    ]
+  },
+  {
+    "word": "runtime",
+    "phonetic": "/ˈrʌntaɪm/",
+    "senses": [
+      {"pos": "n.", "meaning": "运行时；运行期"}
+    ]
+  },
+  {
+    "word": "semaphore",
+    "phonetic": "/ˈseməfɔː(r)/",
+    "senses": [
+      {"pos": "n.", "meaning": "信号量"}
+    ]
+  },
+  {
+    "word": "syntax",
+    "phonetic": "/ˈsɪntæks/",
+    "senses": [
+      {"pos": "n.", "meaning": "语法"}
+    ]
+  },
+  {
+    "word": "thread",
+    "phonetic": "/θred/",
+    "senses": [
+      {"pos": "n.", "meaning": "线程"}
+    ]
+  },
+  {
+    "word": "throughput",
+    "phonetic": "/ˈθruːpʊt/",
+    "senses": [
+      {"pos": "n.", "meaning": "吞吐量"}
+    ]
+  },
+  {
+    "word": "transaction",
+    "phonetic": "/trænˈzækʃn/",
+    "senses": [
+      {"pos": "n.", "meaning": "事务（数据库）"}
+    ]
+  },
+  {
+    "word": "variable",
+    "phonetic": "/ˈveəriəbl/",
+    "senses": [
+      {"pos": "n.", "meaning": "变量"}
+    ]
+  },
+  {
+    "word": "vulnerability",
+    "phonetic": "/ˌvʌlnərəˈbɪləti/",
+    "senses": [
+      {"pos": "n.", "meaning": "漏洞；脆弱性"}
+    ]
+  },
+  {
+    "word": "button",
+    "phonetic": "/ˈbʌtn/",
+    "senses": [
+      {"pos": "n.", "meaning": "按钮"}
+    ]
+  },
+  {
+    "word": "menu",
+    "phonetic": "/ˈmenjuː/",
+    "senses": [
+      {"pos": "n.", "meaning": "菜单"}
+    ]
+  },
+  {
+    "word": "login",
+    "phonetic": "/ˈlɒɡɪn/",
+    "senses": [
+      {"pos": "n.", "meaning": "登录；登入"}
+    ]
+  },
+  {
+    "word": "logout",
+    "phonetic": "/ˈlɒɡaʊt/",
+    "senses": [
+      {"pos": "n.", "meaning": "退出登录；注销"}
+    ]
+  },
+  {
+    "word": "submit",
+    "phonetic": "/səbˈmɪt/",
+    "senses": [
+      {"pos": "v.", "meaning": "提交（表单、数据等）"}
+    ]
+  },
+  {
+    "word": "reset",
+    "phonetic": "/ˌriːˈset/",
+    "senses": [
+      {"pos": "v.", "meaning": "重置；恢复"}
+    ]
+  },
+  {
+    "word": "error",
+    "phonetic": "/ˈerə(r)/",
+    "senses": [
+      {"pos": "n.", "meaning": "错误；报错"}
+    ]
+  },
+  {
+    "word": "warning",
+    "phonetic": "/ˈwɔːnɪŋ/",
+    "senses": [
+      {"pos": "n.", "meaning": "警告"}
+    ]
+  },
+  {
+    "word": "loading",
+    "phonetic": "/ˈləʊdɪŋ/",
+    "senses": [
+      {"pos": "n.", "meaning": "加载中；载入"}
+    ]
+  },
+  {
+    "word": "update",
+    "phonetic": "/ˌʌpˈdeɪt/",
+    "senses": [
+      {"pos": "v.", "meaning": "更新"},
+      {"pos": "n.", "meaning": "更新；升级包"}
+    ]
+  },
+  {
+    "word": "install",
+    "phonetic": "/ɪnˈstɔːl/",
+    "senses": [
+      {"pos": "v.", "meaning": "安装"}
+    ]
+  },
+  {
+    "word": "version",
+    "phonetic": "/ˈvɜːʃn/",
+    "senses": [
+      {"pos": "n.", "meaning": "版本"}
+    ]
+  },
+  {
+    "word": "layout",
+    "phonetic": "/ˈleɪaʊt/",
+    "senses": [
+      {"pos": "n.", "meaning": "布局；排版"}
+    ]
+  },
+  {
+    "word": "link",
+    "phonetic": "/lɪŋk/",
+    "senses": [
+      {"pos": "n.", "meaning": "链接"},
+      {"pos": "v.", "meaning": "链接；关联"}
+    ]
+  },
+  {
+    "word": "target",
+    "phonetic": "/ˈtɑːɡɪt/",
+    "senses": [
+      {"pos": "n.", "meaning": "目标；目标对象"},
+      {"pos": "adj.", "meaning": "目标的（如 target folder 目标文件夹）"}
+    ]
+  },
+  {
+    "word": "source",
+    "phonetic": "/sɔːs/",
+    "senses": [
+      {"pos": "n.", "meaning": "源；源代码（source code）"}
+    ]
+  },
+  {
+    "word": "code",
+    "phonetic": "/kəʊd/",
+    "senses": [
+      {"pos": "n.", "meaning": "代码"},
+      {"pos": "v.", "meaning": "编码；写代码"}
+    ]
+  },
+  {
+    "word": "script",
+    "phonetic": "/skrɪpt/",
+    "senses": [
+      {"pos": "n.", "meaning": "脚本（如 JavaScript）"}
+    ]
+  },
+  {
+    "word": "bug",
+    "phonetic": "/bʌɡ/",
+    "senses": [
+      {"pos": "n.", "meaning": "程序错误；漏洞"}
+    ]
+  },
+  {
+    "word": "feature",
+    "phonetic": "/ˈfiːtʃə(r)/",
+    "senses": [
+      {"pos": "n.", "meaning": "功能；特性"}
+    ]
+  },
+  {
+    "word": "deploy",
+    "phonetic": "/dɪˈplɔɪ/",
+    "senses": [
+      {"pos": "v.", "meaning": "部署（将软件发布到服务器）"}
+    ]
+  },
+  {
+    "word": "build",
+    "phonetic": "/bɪld/",
+    "senses": [
+      {"pos": "v.", "meaning": "构建；编译"},
+      {"pos": "n.", "meaning": "构建版本"}
+    ]
+  },
+  {
+    "word": "execute",
+    "phonetic": "/ˈeksɪkjuːt/",
+    "senses": [
+      {"pos": "v.", "meaning": "执行"}
+    ]
+  },
+  {
+    "word": "library",
+    "phonetic": "/ˈlaɪbrəri/",
+    "senses": [
+      {"pos": "n.", "meaning": "库（代码库；如标准库）"}
+    ]
+  },
+  {
+    "word": "package",
+    "phonetic": "/ˈpækɪdʒ/",
+    "senses": [
+      {"pos": "n.", "meaning": "包（软件包、依赖包）"}
+    ]
+  },
+  {
+    "word": "module",
+    "phonetic": "/ˈmɒdjuːl/",
+    "senses": [
+      {"pos": "n.", "meaning": "模块；组件"}
+    ]
+  },
+  {
+    "word": "dependency",
+    "phonetic": "/dɪˈpendənsi/",
+    "senses": [
+      {"pos": "n.", "meaning": "依赖（依赖项、依赖包）"}
+    ]
+  },
+  {
+    "word": "compiler",
+    "phonetic": "/kəmˈpaɪlə(r)/",
+    "senses": [
+      {"pos": "n.", "meaning": "编译器"}
+    ]
+  },
+  {
+    "word": "terminal",
+    "phonetic": "/ˈtɜːmɪnl/",
+    "senses": [
+      {"pos": "n.", "meaning": "终端；命令行界面"}
+    ]
+  },
+  {
+    "word": "command",
+    "phonetic": "/kəˈmɑːnd/",
+    "senses": [
+      {"pos": "n.", "meaning": "命令"},
+      {"pos": "v.", "meaning": "命令；指挥"}
+    ]
+  },
+  {
+    "word": "server",
+    "phonetic": "/ˈsɜːvə(r)/",
+    "senses": [
+      {"pos": "n.", "meaning": "服务器"}
+    ]
+  },
+  {
+    "word": "client",
+    "phonetic": "/ˈklaɪənt/",
+    "senses": [
+      {"pos": "n.", "meaning": "客户端；客户机"}
+    ]
+  },
+  {
+    "word": "frontend",
+    "phonetic": "/ˌfrʌntˈend/",
+    "senses": [
+      {"pos": "n.", "meaning": "前端（用户界面部分）"}
+    ]
+  },
+  {
+    "word": "backend",
+    "phonetic": "/ˌbækˈend/",
+    "senses": [
+      {"pos": "n.", "meaning": "后端（服务器端部分）"}
+    ]
+  },
+  {
+    "word": "environment",
+    "phonetic": "/ɪnˈvaɪrənmənt/",
+    "senses": [
+      {"pos": "n.", "meaning": "环境（开发环境、运行环境）"}
+    ]
+  },
+  {
+    "word": "network",
+    "phonetic": "/ˈnetwɜːk/",
+    "senses": [
+      {"pos": "n.", "meaning": "网络"}
+    ]
+  },
+  {
+    "word": "domain",
+    "phonetic": "/dəˈmeɪn/",
+    "senses": [
+      {"pos": "n.", "meaning": "域名；域"}
+    ]
+  },
+  {
+    "word": "browser",
+    "phonetic": "/ˈbraʊzə(r)/",
+    "senses": [
+      {"pos": "n.", "meaning": "浏览器"}
+    ]
+  },
+  {
+    "word": "cookie",
+    "phonetic": "/ˈkʊki/",
+    "senses": [
+      {"pos": "n.", "meaning": "小型文本文件（浏览器用于保存用户状态）"}
+    ]
+  },
+  {
+    "word": "session",
+    "phonetic": "/ˈseʃn/",
+    "senses": [
+      {"pos": "n.", "meaning": "会话；一次会话"}
+    ]
+  },
+  {
+    "word": "token",
+    "phonetic": "/ˈtəʊkən/",
+    "senses": [
+      {"pos": "n.", "meaning": "令牌（身份验证凭证）"}
+    ]
+  },
+  {
+    "word": "proxy",
+    "phonetic": "/ˈprɒksi/",
+    "senses": [
+      {"pos": "n.", "meaning": "代理；代理服务器"}
+    ]
+  },
+  {
+    "word": "bandwidth",
+    "phonetic": "/ˈbændwɪdθ/",
+    "senses": [
+      {"pos": "n.", "meaning": "带宽"}
+    ]
+  },
+  {
+    "word": "data",
+    "phonetic": "/ˈdeɪtə/",
+    "senses": [
+      {"pos": "n.", "meaning": "数据"}
+    ]
+  },
+  {
+    "word": "database",
+    "phonetic": "/ˈdeɪtəbeɪs/",
+    "senses": [
+      {"pos": "n.", "meaning": "数据库"}
+    ]
+  },
+  {
+    "word": "table",
+    "phonetic": "/ˈteɪbl/",
+    "senses": [
+      {"pos": "n.", "meaning": "表（数据库表）"}
+    ]
+  },
+  {
+    "word": "record",
+    "phonetic": "/ˈrekɔːd/",
+    "senses": [
+      {"pos": "n.", "meaning": "记录（数据库中的一行）"}
+    ]
+  },
+  {
+    "word": "schema",
+    "phonetic": "/ˈskiːmə/",
+    "senses": [
+      {"pos": "n.", "meaning": "模式；架构（数据库结构）"}
+    ]
+  },
+  {
+    "word": "backup",
+    "phonetic": "/ˈbækʌp/",
+    "senses": [
+      {"pos": "n.", "meaning": "备份"}
+    ]
+  },
+  {
+    "word": "storage",
+    "phonetic": "/ˈstɔːrɪdʒ/",
+    "senses": [
+      {"pos": "n.", "meaning": "存储；存储空间"}
+    ]
+  },
+  {
+    "word": "traceback",
+    "phonetic": "/ˈtreɪsbæk/",
+    "senses": [
+      {"pos": "n.", "meaning": "回溯信息（报错时最上面那一长串代码位置记录）"}
+    ]
+  },
+  {
+    "word": "stack",
+    "phonetic": "/stæk/",
+    "senses": [
+      {"pos": "n.", "meaning": "堆栈（如 Stack trace，记录了程序调用过程）"}
+    ]
+  },
+  {
+    "word": "expected",
+    "phonetic": "/ɪkˈspektɪd/",
+    "senses": [
+      {"pos": "adj.", "meaning": "预期的；本来应该有的（报错如：expected string，意思是“本该是个字符串”，说明你给错了类型）"}
+    ]
+  },
+  {
+    "word": "unexpected",
+    "phonetic": "/ˌʌnɪkˈspektɪd/",
+    "senses": [
+      {"pos": "adj.", "meaning": "意外的；不期而遇的（报错如：unexpected token，意思是“碰到了不该出现的符号”，通常是少写了个括号或引号）"}
+    ]
+  },
+  {
+    "word": "undefined",
+    "phonetic": "/ˌʌndɪˈfaɪnd/",
+    "senses": [
+      {"pos": "adj.", "meaning": "未定义的（变量没声明就直接用了）"}
+    ]
+  },
+  {
+    "word": "invalid",
+    "phonetic": "/ɪnˈvælɪd/",
+    "senses": [
+      {"pos": "adj.", "meaning": "无效的；非法的（如：invalid syntax 语法无效）"}
+    ]
+  },
+  {
+    "word": "missing",
+    "phonetic": "/ˈmɪsɪŋ/",
+    "senses": [
+      {"pos": "adj.", "meaning": "缺失的；缺少的（如：missing required argument 缺少必需参数）"}
+    ]
+  },
+  {
+    "word": "required",
+    "phonetic": "/rɪˈkwaɪəd/",
+    "senses": [
+      {"pos": "adj.", "meaning": "必需的；要求的"}
+    ]
+  },
+  {
+    "word": "type",
+    "phonetic": "/taɪp/",
+    "senses": [
+      {"pos": "n.", "meaning": "类型（如：TypeError 类型错误，比如把数字当成了字符串用）"}
+    ]
+  },
+  {
+    "word": "reference",
+    "phonetic": "/ˈrefrəns/",
+    "senses": [
+      {"pos": "n.", "meaning": "引用（如：ReferenceError 引用错误，通常是找不到这个变量）"}
+    ]
+  },
+  {
+    "word": "index",
+    "phonetic": "/ˈɪndeks/",
+    "senses": [
+      {"pos": "n.", "meaning": "索引（如：IndexError 索引越界，比如列表只有3个元素，你非要取第5个）"}
+    ]
+  },
+  {
+    "word": "key",
+    "phonetic": "/kiː/",
+    "senses": [
+      {"pos": "n.", "meaning": "键（如：KeyError 键错误，字典里找不到这个键）"}
+    ]
+  },
+  {
+    "word": "attribute",
+    "phonetic": "/ˈætrɪbjuːt/",
+    "senses": [
+      {"pos": "n.", "meaning": "属性（如：AttributeError 属性错误，对象没有这个功能或变量）"}
+    ]
+  },
+  {
+    "word": "null",
+    "phonetic": "/nʌl/",
+    "senses": [
+      {"pos": "n.", "meaning": "空值（表示什么都没有；如：null pointer 空指针）"}
+    ]
+  },
+  {
+    "word": "pointer",
+    "phonetic": "/ˈpɔɪntə(r)/",
+    "senses": [
+      {"pos": "n.", "meaning": "指针（指向内存地址）"}
+    ]
+  },
+  {
+    "word": "token",
+    "phonetic": "/ˈtəʊkən/",
+    "senses": [
+      {"pos": "n.", "meaning": "词法单元（代码里最小的单位，如一个逗号、一个单词）"}
+    ]
+  },
+  {
+    "word": "argument",
+    "phonetic": "/ˈɑːɡjumənt/",
+    "senses": [
+      {"pos": "n.", "meaning": "实参（调用函数时实际传进去的值）"}
+    ]
+  },
+  {
+    "word": "parameter",
+    "phonetic": "/pəˈræmɪtə(r)/",
+    "senses": [
+      {"pos": "n.", "meaning": "形参（函数定义时括号里的变量名）"}
+    ]
+  },
+  {
+    "word": "assign",
+    "phonetic": "/əˈsaɪn/",
+    "senses": [
+      {"pos": "v.", "meaning": "赋值（报错如：cannot assign to... 不能把值赋给...）"}
+    ]
+  },
+  {
+    "word": "call",
+    "phonetic": "/kɔːl/",
+    "senses": [
+      {"pos": "v.", "meaning": "调用（报错如：called with 2 arguments，意思是“被调用时传了2个参数”）"}
+    ]
+  },
+  {
+    "word": "resolve",
+    "phonetic": "/rɪˈzɒlv/",
+    "senses": [
+      {"pos": "v.", "meaning": "解析；解决（报错如：cannot resolve module，意思是找不到/无法解析这个模块）"}
+    ]
+  },
+  {
+    "word": "declaration",
+    "phonetic": "/ˌdekləˈreɪʃn/",
+    "senses": [
+      {"pos": "n.", "meaning": "声明（告诉编译器有个变量，但还没赋值）"}
+    ]
+  },
+  {
+    "word": "definition",
+    "phonetic": "/ˌdefɪˈnɪʃn/",
+    "senses": [
+      {"pos": "n.", "meaning": "定义（具体的实现代码）"}
+    ]
+  },
+  {
+    "word": "statement",
+    "phonetic": "/ˈsteɪtmənt/",
+    "senses": [
+      {"pos": "n.", "meaning": "语句（一行完整的执行代码，如 if 语句、return 语句）"}
+    ]
+  },
+  {
+    "word": "character",
+    "phonetic": "/ˈkærəktə(r)/",
+    "senses": [
+      {"pos": "n.", "meaning": "字符（如：invalid character 非法字符，通常是混入了中文标点）"}
+    ]
+  },
+  {
+    "word": "encoding",
+    "phonetic": "/ɪnˈkəʊdɪŋ/",
+    "senses": [
+      {"pos": "n.", "meaning": "编码（如：encoding error 编码错误，比如中文乱码）"}
+    ]
+  },
+  {
+    "word": "format",
+    "phonetic": "/ˈfɔːmæt/",
+    "senses": [
+      {"pos": "n.", "meaning": "格式（如：format string 格式化字符串）"}
+    ]
+  },
+  {
+    "word": "range",
+    "phonetic": "/reɪndʒ/",
+    "senses": [
+      {"pos": "n.", "meaning": "范围（如：out of range 超出范围）"}
+    ]
+  },
+  {
+    "word": "overflow",
+    "phonetic": "/ˌəʊvəˈfləʊ/",
+    "senses": [
+      {"pos": "n.", "meaning": "溢出（数据太大了，装不下了，如内存溢出）"}
+    ]
+  },
+  {
+    "word": "deprecated",
+    "phonetic": "/ˈdeprəkeɪtɪd/",
+    "senses": [
+      {"pos": "adj.", "meaning": "已废弃的（警告：这个写法以后不能用了，建议换新的）"}
+    ]
+  },
+  {
+    "word": "conflict",
+    "phonetic": "/ˈkɒnflɪkt/",
+    "senses": [
+      {"pos": "n.", "meaning": "冲突（如：dependency conflict 依赖冲突，两个包要求的版本打架了）"}
+    ]
+  },
+  {
+    "word": "timeout",
+    "phonetic": "/ˈtaɪmaʊt/",
+    "senses": [
+      {"pos": "n.", "meaning": "超时（等太久了，程序不等了，如网络请求超时）"}
+    ]
+  },
+  {
+    "word": "connection",
+    "phonetic": "/kəˈnekʃn/",
+    "senses": [
+      {"pos": "n.", "meaning": "连接（如：connection refused 连接被拒绝）"}
+    ]
+  },
+  {
+    "word": "permission",
+    "phonetic": "/pəˈmɪʃn/",
+    "senses": [
+      {"pos": "n.", "meaning": "权限（如：Permission denied 权限被拒绝，通常是没管理员权限去改系统文件）"}
+    ]
+  },
+  {
+    "word": "denied",
+    "phonetic": "/dɪˈnaɪd/",
+    "senses": [
+      {"pos": "adj.", "meaning": "被拒绝的"}
+    ]
+  },
+  {
+    "word": "semicolon",
+    "phonetic": "/ˌsemiˈkəʊlən/",
+    "senses": [
+      {"pos": "n.", "meaning": "分号（报错里极常见：missing semicolon 少了个分号）"}
+    ]
+  },
+  {
+    "word": "bracket",
+    "phonetic": "/ˈbrækɪt/",
+    "senses": [
+      {"pos": "n.", "meaning": "括号（圆括号、方括号等）"}
+    ]
+  },
+  {
+    "word": "quotation",
+    "phonetic": "/kwəʊˈteɪʃn/",
+    "senses": [
+      {"pos": "n.", "meaning": "引号（报错如：unclosed quotation mark 引号没闭合）"}
+    ]
+  },
+  {
+    "word": "terminate",
+    "phonetic": "/ˈtɜːmɪneɪt/",
+    "senses": [
+      {"pos": "v.", "meaning": "终止（程序崩溃时经常出现，如：process terminated 进程被终止）"}
+    ]
+  },
+  {
+    "word": "fatal",
+    "phonetic": "/ˈfeɪtl/",
+    "senses": [
+      {"pos": "adj.", "meaning": "致命的（fatal error 致命错误，程序彻底崩了，跑不下去了）"}
+    ]
+  }
+]
